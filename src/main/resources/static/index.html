@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubTrack - Subscription Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #fafbfc;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: #3b82f6;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #1a1a1a;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+            width: 240px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Main Content */
+        .main {
+            padding: 32px 0;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        /* Auth Forms */
+        .auth-container {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 48px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 32px;
+            color: #1a1a1a;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #f9fafb;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .auth-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #1a1a1a;
+        }
+
+        /* Search and Filters */
+        .search-section {
+            margin-bottom: 24px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #f9fafb;
+            margin-bottom: 16px;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-tab:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .filter-tab.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        /* Subscription Grid */
+        .subscription-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .subscription-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            border: 1px solid #f3f4f6;
+        }
+
+        .subscription-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .subscription-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .subscription-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            margin-right: 16px;
+            object-fit: cover;
+        }
+
+        .subscription-info {
+            flex: 1;
+        }
+
+        .subscription-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .subscription-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .subscription-category {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .subscription-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 16px 0;
+        }
+
+        .subscription-description {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .subscription-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .subscription-actions .btn {
+            flex: 1;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 4px;
+        }
+
+        .close-modal:hover {
+            color: #1a1a1a;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .empty-state-description {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .nav {
+                gap: 16px;
+            }
+
+            .search-input {
+                width: 200px;
+            }
+
+            .auth-card {
+                padding: 32px 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .subscription-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 24px;
+                margin: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                SubTrack
+            </div>
+
+            <nav class="nav" id="mainNav" style="display: none;">
+                <a href="#" class="nav-link active" id="homeLink">Home</a>
+                <a href="#" class="nav-link" id="subscriptionsLink">Subscriptions</a>
+                <a href="#" class="nav-link" id="browseLink">Browse</a>
+            </nav>
+
+            <div class="user-menu">
+                <input type="text" class="search-input" id="headerSearch" placeholder="Search..." style="display: none;">
+                <div class="user-avatar" id="userAvatar" style="display: none;">U</div>
+                <button class="btn btn-primary" id="loginBtn">Login</button>
+                <button class="btn btn-secondary" id="registerBtn">Register</button>
+                <button class="btn btn-danger" id="logoutBtn" style="display: none;">Logout</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="main">
+    <div class="container">
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-container">
+            <div class="auth-card">
+                <h1 class="auth-title">Welcome back</h1>
+                <div id="loginError" class="alert alert-error hidden"></div>
+                <form id="loginFormElement">
+                    <div class="form-group">
+                        <label class="form-label" for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" class="form-input" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                <div class="auth-link">
+                    <a href="#" id="showRegisterLink">Don't have an account? Sign up</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="auth-container hidden">
+            <div class="auth-card">
+                <h1 class="auth-title">Create your account</h1>
+                <div id="registerError" class="alert alert-error hidden"></div>
+                <form id="registerFormElement">
+                    <div class="form-group">
+                        <label class="form-label" for="registerFirstName">First Name</label>
+                        <input type="text" id="registerFirstName" class="form-input" placeholder="Enter your first name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="registerLastName">Last Name</label>
+                        <input type="text" id="registerLastName" class="form-input" placeholder="Enter your last name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="registerUsername">Username</label>
+                        <input type="text" id="registerUsername" class="form-input" placeholder="Choose a username" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" class="form-input" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" class="form-input" placeholder="Create a password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </form>
+                <div class="auth-link">
+                    <a href="#" id="showLoginLink">Already have an account? Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Manage your subscriptions and track your spending</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCost">$0.00</div>
+                    <div class="stat-label">Monthly Cost</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeCount">0</div>
+                    <div class="stat-label">Active Subscriptions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="averageCost">$0.00</div>
+                    <div class="stat-label">Average Cost</div>
+                </div>
+            </div>
+
+            <!-- My Subscriptions -->
+            <div class="content-card">
+                <h2 class="card-title">My Subscriptions</h2>
+                <div id="userSubscriptions" class="subscription-grid"></div>
+            </div>
+
+            <!-- Browse Subscriptions -->
+            <div class="content-card">
+                <h2 class="card-title">Browse Subscriptions</h2>
+                <p class="page-subtitle" style="margin-bottom: 24px;">Explore a variety of subscription services tailored to your interests.</p>
+
+                <div class="search-section">
+                    <input type="text" class="search-bar" id="searchInput" placeholder="Search for subscriptions">
+                    <div class="filter-tabs" id="categoryTabs"></div>
+                </div>
+
+                <div id="availableSubscriptions" class="subscription-grid"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Profile Settings</h2>
+            <button class="close-modal" id="closeProfile">&times;</button>
+        </div>
+        <div id="profileError" class="alert alert-error hidden"></div>
+        <div id="profileSuccess" class="alert alert-success hidden"></div>
+        <form id="profileForm">
+            <div class="form-group">
+                <label class="form-label" for="profileUsername">Username</label>
+                <input type="text" id="profileUsername" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profileEmail">Email</label>
+                <input type="email" id="profileEmail" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profileFirstName">First Name</label>
+                <input type="text" id="profileFirstName" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profileLastName">Last Name</label>
+                <input type="text" id="profileLastName" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="profilePassword">New Password (leave empty to keep current)</label>
+                <input type="password" id="profilePassword" class="form-input">
+            </div>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Subscription Modal -->
+<div id="addSubscriptionModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Add Subscription</h2>
+            <button class="close-modal" id="closeAddSubscription">&times;</button>
+        </div>
+        <div id="addSubscriptionError" class="alert alert-error hidden"></div>
+        <form id="addSubscriptionForm">
+            <input type="hidden" id="selectedSubscriptionId">
+            <div class="form-group">
+                <label class="form-label" for="startDate">Start Date</label>
+                <input type="date" id="startDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="nextBillingDate">Next Billing Date</label>
+                <input type="date" id="nextBillingDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="notes">Notes (optional)</label>
+                <textarea id="notes" class="form-input" rows="3" placeholder="Add any notes about this subscription"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Subscription</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:8080';
+
+    let currentUser = null;
+    let authToken = localStorage.getItem('authToken');
+    let allSubscriptions = [];
+    let userSubscriptions = [];
+    let categories = [];
+
+    // DOM Elements
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const dashboard = document.getElementById('dashboard');
+    const mainNav = document.getElementById('mainNav');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userAvatar = document.getElementById('userAvatar');
+    const headerSearch = document.getElementById('headerSearch');
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+        if (authToken) {
+            showDashboard();
+            loadUserProfile();
+            loadDashboardData();
+        } else {
+            showLogin();
+        }
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        // Navigation
+        loginBtn.addEventListener('click', showLogin);
+        registerBtn.addEventListener('click', showRegister);
+        logoutBtn.addEventListener('click', logout);
+        userAvatar.addEventListener('click', showProfile);
+
+        // Auth links
+        document.getElementById('showRegisterLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegister();
+        });
+        document.getElementById('showLoginLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showLogin();
+        });
+
+        // Forms
+        document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
+        document.getElementById('registerFormElement').addEventListener('submit', handleRegister);
+        document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
+        document.getElementById('addSubscriptionForm').addEventListener('submit', handleAddSubscription);
+
+        // Modals
+        document.getElementById('closeProfile').addEventListener('click', hideProfile);
+        document.getElementById('closeAddSubscription').addEventListener('click', hideAddSubscription);
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', filterSubscriptions);
+        headerSearch.addEventListener('input', filterSubscriptions);
+
+        // Modal close on outside click
+        document.getElementById('profileModal').addEventListener('click', function(e) {
+            if (e.target === this) hideProfile();
+        });
+        document.getElementById('addSubscriptionModal').addEventListener('click', function(e) {
+            if (e.target === this) hideAddSubscription();
+        });
+    }
+
+    // API Functions
+    async function apiCall(endpoint, options = {}) {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+            },
+            ...options
+        };
+
+        try {
+            const response = await fetch(`${API_BASE}${endpoint}`, config);
+            const contentType = response.headers.get('content-type');
+            let data;
+
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                if (text.includes('Invalid CORS request') || text.includes('CORS')) {
+                    throw new Error('CORS Error: Please check the backend CORS configuration.');
+                } else if (response.status === 404) {
+                    throw new Error('API endpoint not found. Please check if the API Gateway is running.');
+                } else {
+                    throw new Error(`Server error: ${text.substring(0, 100)}`);
+                }
+            }
+
+            if (!response.ok) {
+                throw new Error(data?.message || `HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return data;
+        } catch (error) {
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error('Cannot connect to server. Please check if the API Gateway is running on port 8080.');
+            }
+            throw error;
+        }
+    }
+
+    // Authentication
+    async function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await apiCall('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password })
+            });
+
+            authToken = response.data.token;
+            currentUser = response.data;
+            localStorage.setItem('authToken', authToken);
+
+            showDashboard();
+            loadDashboardData();
+            hideError('loginError');
+        } catch (error) {
+            showError('loginError', error.message);
+        }
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const formData = {
+            username: document.getElementById('registerUsername').value,
+            email: document.getElementById('registerEmail').value,
+            firstName: document.getElementById('registerFirstName').value,
+            lastName: document.getElementById('registerLastName').value,
+            password: document.getElementById('registerPassword').value
+        };
+
+        try {
+            await apiCall('/api/auth/register', {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+
+            showSuccess('registerError', 'Registration successful! Please login.');
+            setTimeout(showLogin, 2000);
+        } catch (error) {
+            showError('registerError', error.message);
+        }
+    }
+
+    function logout() {
+        authToken = null;
+        currentUser = null;
+        localStorage.removeItem('authToken');
+        showLogin();
+    }
+
+    // Profile Management
+    async function loadUserProfile() {
+        try {
+            const response = await apiCall('/api/users/profile');
+            currentUser = response;
+
+            // Update UI
+            userAvatar.textContent = currentUser.firstName[0].toUpperCase();
+
+            // Populate profile form
+            document.getElementById('profileUsername').value = currentUser.username;
+            document.getElementById('profileEmail').value = currentUser.email;
+            document.getElementById('profileFirstName').value = currentUser.firstName;
+            document.getElementById('profileLastName').value = currentUser.lastName;
+        } catch (error) {
+            console.error('Failed to load profile:', error);
+        }
+    }
+
+    async function handleProfileUpdate(e) {
+        e.preventDefault();
+        const formData = {
+            username: document.getElementById('profileUsername').value,
+            email: document.getElementById('profileEmail').value,
+            firstName: document.getElementById('profileFirstName').value,
+            lastName: document.getElementById('profileLastName').value
+        };
+
+        const password = document.getElementById('profilePassword').value;
+        if (password) {
+            formData.password = password;
+        }
+
+        try {
+            await apiCall('/api/users/profile', {
+                method: 'PUT',
+                body: JSON.stringify(formData)
+            });
+
+            showSuccess('profileSuccess', 'Profile updated successfully!');
+            hideError('profileError');
+            document.getElementById('profilePassword').value = '';
+            loadUserProfile();
+        } catch (error) {
+            showError('profileError', error.message);
+            hideSuccess('profileSuccess');
+        }
+    }
+
+    // Dashboard Data
+    async function loadDashboardData() {
+        await Promise.all([
+            loadUserSubscriptions(),
+            loadAvailableSubscriptions(),
+            loadCategories(),
+            loadMonthlyCost()
+        ]);
+    }
+
+    async function loadUserSubscriptions() {
+        try {
+            const response = await apiCall('/api/user-subscriptions');
+            userSubscriptions = response.subscriptions || [];
+            renderUserSubscriptions();
+        } catch (error) {
+            console.error('Failed to load user subscriptions:', error);
+        }
+    }
+
+    async function loadAvailableSubscriptions() {
+        try {
+            const response = await apiCall('/api/subscriptions');
+            allSubscriptions = response.subscriptions || [];
+            renderAvailableSubscriptions();
+        } catch (error) {
+            console.error('Failed to load subscriptions:', error);
+        }
+    }
+
+    async function loadCategories() {
+        try {
+            const response = await apiCall('/api/subscriptions/categories');
+            categories = response.categories || [];
+            renderCategoryTabs();
+        } catch (error) {
+            console.error('Failed to load categories:', error);
+        }
+    }
+
+    async function loadMonthlyCost() {
+        try {
+            const response = await apiCall('/api/user-subscriptions/monthly-cost');
+            const summary = response.summary;
+
+            document.getElementById('totalCost').textContent = `${summary.totalMonthlyCost.toFixed(2)} ${summary.currency}`;
+            document.getElementById('activeCount').textContent = summary.activeSubscriptionCount;
+            document.getElementById('averageCost').textContent = `${summary.averageCostPerSubscription.toFixed(2)} ${summary.currency}`;
+        } catch (error) {
+            console.error('Failed to load monthly cost:', error);
+        }
+    }
+
+    // Rendering Functions
+    function renderUserSubscriptions() {
+        const container = document.getElementById('userSubscriptions');
+
+        if (userSubscriptions.length === 0) {
+            container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📱</div>
+                        <div class="empty-state-title">No subscriptions yet</div>
+                        <div class="empty-state-description">Browse available subscriptions below to get started!</div>
+                    </div>
+                `;
+            return;
+        }
+
+        container.innerHTML = userSubscriptions.map(sub => `
+                <div class="subscription-card">
+                    <div class="subscription-header">
+                        <img src="${sub.logoUrl}" alt="${sub.subscriptionName}" class="subscription-logo"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzNiODJmNiIvPgo8dGV4dCB4PSIyNCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4ke3N1Yi5zdWJzY3JpcHRpb25OYW1lWzBdfTwvdGV4dD4KPHN2Zz4K'">
+                        <div class="subscription-info">
+                            <div class="subscription-name">${sub.subscriptionName}</div>
+                            <div class="subscription-meta">Next billing: ${new Date(sub.nextBillingDate).toLocaleDateString()}</div>
+                        </div>
+                        <div class="subscription-category">${sub.subscriptionCategory}</div>
+                    </div>
+                    <div class="subscription-price">${sub.monthlyPrice.toFixed(2)} ${sub.currency}</div>
+                    ${sub.notes ? `<div class="subscription-description">${sub.notes}</div>` : ''}
+                    <div class="subscription-actions">
+                        <a href="${sub.websiteUrl}" target="_blank" class="btn btn-secondary">Visit Site</a>
+                        <button class="btn btn-danger" onclick="removeSubscription(${sub.id})">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function renderAvailableSubscriptions(subscriptionsToRender = allSubscriptions) {
+        const container = document.getElementById('availableSubscriptions');
+
+        if (subscriptionsToRender.length === 0) {
+            container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-title">No subscriptions found</div>
+                        <div class="empty-state-description">Try adjusting your search or filter criteria</div>
+                    </div>
+                `;
+            return;
+        }
+
+        container.innerHTML = subscriptionsToRender.map(sub => {
+            const isSubscribed = userSubscriptions.some(userSub => userSub.subscriptionId === sub.id);
+
+            return `
+                    <div class="subscription-card">
+                        <div class="subscription-header">
+                            <img src="${sub.logoUrl}" alt="${sub.name}" class="subscription-logo"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzNiODJmNiIvPgo8dGV4dCB4PSIyNCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4ke3N1Yi5uYW1lWzBdfTwvdGV4dD4KPHN2Zz4K'">
+                            <div class="subscription-info">
+                                <div class="subscription-name">${sub.name}</div>
+                            </div>
+                            <div class="subscription-category">${sub.category}</div>
+                        </div>
+                        <div class="subscription-price">${sub.price.toFixed(2)} ${sub.currency}</div>
+                        <div class="subscription-description">${sub.description}</div>
+                        <div class="subscription-actions">
+                            <a href="${sub.websiteUrl}" target="_blank" class="btn btn-secondary">Visit Site</a>
+                            <button class="btn btn-primary" onclick="showAddSubscription(${sub.id}, '${sub.name}')" ${isSubscribed ? 'disabled' : ''}>
+                                ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+        }).join('');
+    }
+
+    function renderCategoryTabs() {
+        const container = document.getElementById('categoryTabs');
+        const allTab = '<div class="filter-tab active" onclick="filterByCategory(\'all\', this)">All</div>';
+        const categoryTabs = categories.map(category =>
+            `<div class="filter-tab" onclick="filterByCategory('${category}', this)">${category}</div>`
+        ).join('');
+
+        container.innerHTML = allTab + categoryTabs;
+    }
+
+    // Subscription Management
+    async function removeSubscription(subscriptionId) {
+        if (!confirm('Are you sure you want to remove this subscription?')) return;
+
+        try {
+            await apiCall(`/api/user-subscriptions/${subscriptionId}`, {
+                method: 'DELETE'
+            });
+
+            await loadUserSubscriptions();
+            await loadMonthlyCost();
+            renderAvailableSubscriptions();
+        } catch (error) {
+            alert('Failed to remove subscription: ' + error.message);
+        }
+    }
+
+    function showAddSubscription(subscriptionId, subscriptionName) {
+        document.getElementById('selectedSubscriptionId').value = subscriptionId;
+        document.getElementById('addSubscriptionModal').classList.remove('hidden');
+
+        // Set default dates
+        const today = new Date().toISOString().split('T')[0];
+        const nextMonth = new Date();
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        const nextMonthStr = nextMonth.toISOString().split('T')[0];
+
+        document.getElementById('startDate').value = today;
+        document.getElementById('nextBillingDate').value = nextMonthStr;
+    }
+
+    async function handleAddSubscription(e) {
+        e.preventDefault();
+
+        const formData = {
+            subscriptionId: parseInt(document.getElementById('selectedSubscriptionId').value),
+            startDate: document.getElementById('startDate').value,
+            nextBillingDate: document.getElementById('nextBillingDate').value,
+            notes: document.getElementById('notes').value
+        };
+
+        try {
+            await apiCall('/api/user-subscriptions', {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+
+            hideAddSubscription();
+            await loadUserSubscriptions();
+            await loadMonthlyCost();
+            renderAvailableSubscriptions();
+
+            document.getElementById('addSubscriptionForm').reset();
+        } catch (error) {
+            showError('addSubscriptionError', error.message);
+        }
+    }
+
+    // Filtering and Search
+    function filterSubscriptions() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allSubscriptions.filter(sub =>
+            sub.name.toLowerCase().includes(searchTerm) ||
+            sub.description.toLowerCase().includes(searchTerm) ||
+            sub.category.toLowerCase().includes(searchTerm)
+        );
+        renderAvailableSubscriptions(filtered);
+    }
+
+    function filterByCategory(category, element) {
+        document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+        element.classList.add('active');
+
+        const filtered = category === 'all'
+            ? allSubscriptions
+            : allSubscriptions.filter(sub => sub.category === category);
+
+        renderAvailableSubscriptions(filtered);
+    }
+
+    // UI Functions
+    function showLogin() {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        dashboard.classList.add('hidden');
+        mainNav.style.display = 'none';
+
+        loginBtn.style.display = 'inline-flex';
+        registerBtn.style.display = 'inline-flex';
+        logoutBtn.style.display = 'none';
+        userAvatar.style.display = 'none';
+        headerSearch.style.display = 'none';
+    }
+
+    function showRegister() {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        dashboard.classList.add('hidden');
+        mainNav.style.display = 'none';
+
+        loginBtn.style.display = 'inline-flex';
+        registerBtn.style.display = 'inline-flex';
+        logoutBtn.style.display = 'none';
+        userAvatar.style.display = 'none';
+        headerSearch.style.display = 'none';
+    }
+
+    function showDashboard() {
+        loginForm.classList.add('hidden');
+        registerForm.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        mainNav.style.display = 'flex';
+
+        loginBtn.style.display = 'none';
+        registerBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-flex';
+        userAvatar.style.display = 'flex';
+        headerSearch.style.display = 'block';
+    }
+
+    function showProfile() {
+        document.getElementById('profileModal').classList.remove('hidden');
+    }
+
+    function hideProfile() {
+        document.getElementById('profileModal').classList.add('hidden');
+        hideError('profileError');
+        hideSuccess('profileSuccess');
+    }
+
+    function hideAddSubscription() {
+        document.getElementById('addSubscriptionModal').classList.add('hidden');
+        hideError('addSubscriptionError');
+    }
+
+    function showError(elementId, message) {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.classList.remove('hidden');
+    }
+
+    function hideError(elementId) {
+        document.getElementById(elementId).classList.add('hidden');
+    }
+
+    function showSuccess(elementId, message) {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.classList.remove('hidden');
+        element.className = 'alert alert-success';
+    }
+
+    function hideSuccess(elementId) {
+        document.getElementById(elementId).classList.add('hidden');
+    }
+</script>
+</body>
+</html>
