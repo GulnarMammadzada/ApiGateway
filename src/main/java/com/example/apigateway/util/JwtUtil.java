@@ -1,43 +1,52 @@
 package com.example.apigateway.util;
 
-
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.function.Function;
 
 @Component
 public class JwtUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
+
     @Value("${jwt.secret}")
     private String secret;
-
-    @Value("${jwt.expiration}")
-    private Long expiration;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        try {
+            return extractClaims(token).getSubject();
+        } catch (Exception e) {
+            logger.error("Error extracting username from token", e);
+            return null;
+        }
     }
 
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    public String extractRole(String token) {
+        try {
+            Claims claims = extractClaims(token);
+            String role = claims.get("role", String.class);
+            return role != null ? role : "USER"; // Default to USER if role is not present
+        } catch (Exception e) {
+            logger.error("Error extracting role from token", e);
+            return "USER";
+        }
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String token) {
+    private Claims extractClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
@@ -45,19 +54,52 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    public Boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
-    }
-
-    public Boolean validateToken(String token) {
+    public boolean isTokenExpired(String token) {
         try {
-            return !isTokenExpired(token);
+            Date expiration = extractClaims(token).getExpiration();
+            return expiration.before(new Date());
         } catch (Exception e) {
+            logger.error("Error checking token expiration", e);
+            return true;
+        }
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            if (token == null || token.trim().isEmpty()) {
+                logger.warn("Token is null or empty");
+                return false;
+            }
+
+            Claims claims = extractClaims(token);
+
+            // Check if token is expired
+            if (isTokenExpired(token)) {
+                logger.warn("Token is expired");
+                return false;
+            }
+
+            // Check if username exists
+            String username = claims.getSubject();
+            if (username == null || username.trim().isEmpty()) {
+                logger.warn("Token does not contain valid username");
+                return false;
+            }
+
+            logger.debug("Token validated successfully for user: {}", username);
+            return true;
+
+        } catch (ExpiredJwtException e) {
+            logger.warn("Token expired: {}", e.getMessage());
+            return false;
+        } catch (MalformedJwtException e) {
+            logger.warn("Malformed token: {}", e.getMessage());
+            return false;
+        } catch (SignatureException e) {
+            logger.warn("Invalid token signature: {}", e.getMessage());
+            return false;
+        } catch (Exception e) {
+            logger.error("Token validation failed", e);
             return false;
         }
     }

@@ -3,1271 +3,2838 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubTrack - Subscription Manager</title>
+    <title>Subscription Manager</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Custom Gradient Backgrounds */
+        .gradient-bg-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-bg-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .gradient-bg-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .gradient-bg-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .gradient-bg-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .gradient-bg-6 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .gradient-bg-7 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .gradient-bg-8 { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        /* Animated Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #fafbfc;
-            color: #1a1a1a;
-            line-height: 1.6;
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
+        /* Toast Animations */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            animation: slideInBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-
-        /* Header */
-        .header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 16px 0;
-            position: sticky;
+        .toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        @keyframes slideInBounce {
+            0% { transform: translateX(100%) scale(0.8); opacity: 0; }
+            50% { transform: translateX(-10%) scale(1.05); }
+            100% { transform: translateX(0) scale(1); opacity: 1; }
+        }
+        /* Enhanced Sidebar */
+        .sidebar-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-item:hover {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        .sidebar-item::before {
+            content: '';
+            position: absolute;
             top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 20px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: #3b82f6;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-        }
-
-        .nav {
-            display: flex;
-            gap: 32px;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: #6b7280;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            color: #1a1a1a;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .search-input {
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: #f9fafb;
-            width: 240px;
-            font-size: 14px;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: white;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #3b82f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* Main Content */
-        .main {
-            padding: 32px 0;
-        }
-
-        .page-header {
-            margin-bottom: 32px;
-        }
-
-        .page-title {
-            font-size: 32px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 8px;
-        }
-
-        .page-subtitle {
-            color: #6b7280;
-            font-size: 16px;
-        }
-
-        /* Auth Forms */
-        .auth-container {
-            min-height: calc(100vh - 200px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .auth-card {
-            background: white;
-            border-radius: 12px;
-            padding: 48px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            left: -100%;
             width: 100%;
-            max-width: 400px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
-
-        .auth-title {
-            font-size: 24px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 32px;
-            color: #1a1a1a;
+        .sidebar-item:hover::before {
+            left: 100%;
         }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            background: #f9fafb;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #3b82f6;
+        /* Enhanced Cards */
+        .card {
             background: white;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .form-input::placeholder {
-            color: #9ca3af;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #e5e7eb;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .auth-link {
-            text-align: center;
-            margin-top: 24px;
-        }
-
-        .auth-link a {
-            color: #3b82f6;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .auth-link a:hover {
-            text-decoration: underline;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-            margin-bottom: 48px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        /* Content Cards */
-        .content-card {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 32px;
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 24px;
-            color: #1a1a1a;
-        }
-
-        /* Search and Filters */
-        .search-section {
-            margin-bottom: 24px;
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            background: #f9fafb;
-            margin-bottom: 16px;
-        }
-
-        .search-bar:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: white;
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .filter-tab {
-            padding: 8px 16px;
-            border: 1px solid #e5e7eb;
             border-radius: 20px;
-            background: white;
-            color: #6b7280;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-
-        .filter-tab:hover {
-            border-color: #3b82f6;
-            color: #3b82f6;
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-
-        .filter-tab.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
+        .card:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
         }
-
-        /* Subscription Grid */
-        .subscription-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
+        .card:hover::before {
+            opacity: 1;
         }
-
-        .subscription-card {
-            background: white;
+        /* Stat Cards */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.6s ease;
+        }
+        .stat-card:hover::after {
+            transform: scale(2);
+        }
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
             border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s;
-            border: 1px solid #f3f4f6;
-        }
-
-        .subscription-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .subscription-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .subscription-logo {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            margin-right: 16px;
-            object-fit: cover;
-        }
-
-        .subscription-info {
-            flex: 1;
-        }
-
-        .subscription-name {
-            font-size: 16px;
             font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
         }
-
-        .subscription-meta {
-            font-size: 12px;
-            color: #6b7280;
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
-
-        .subscription-category {
-            background: #f3f4f6;
-            color: #6b7280;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
         }
-
-        .subscription-price {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin: 16px 0;
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
-
-        .subscription-description {
-            color: #6b7280;
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        /* Loading Spinner */
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            background: conic-gradient(from 0deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #3b82f6);
+            mask: radial-gradient(circle 16px, transparent 16px, black 16px);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Status Indicator */
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 20px;
+            border-radius: 25px;
             font-size: 14px;
-            margin-bottom: 20px;
-            line-height: 1.5;
+            font-weight: 600;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
         }
-
-        .subscription-actions {
-            display: flex;
-            gap: 8px;
+        .status-connected {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+            color: white;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
         }
-
-        .subscription-actions .btn {
-            flex: 1;
-            padding: 8px 16px;
-            font-size: 14px;
+        .status-disconnected {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+            color: white;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
         }
-
         /* Modal */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            animation: fadeIn 0.3s ease;
         }
-
         .modal-content {
             background: white;
-            border-radius: 12px;
+            border-radius: 20px;
             padding: 32px;
-            max-width: 500px;
+            max-width: 800px; /* Increased max-width for better table display */
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+            transition: width 1s ease;
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        /* Floating Elements */
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        .floating:nth-child(2) { animation-delay: -2s; }
+        .floating:nth-child(3) { animation-delay: -4s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        /* Pulse Animation */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        /* Glow Effect */
+        .glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            to { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+        }
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+        /* Input Focus Effects */
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: scale(1.02);
+        }
+        /* Table Enhancements */
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        th {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tr:hover {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        /* Badge Animations */
+        .badge {
+            display: inline-flex;
             align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .modal-title {
-            font-size: 20px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: 600;
-            color: #1a1a1a;
+            animation: fadeInScale 0.5s ease;
         }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #6b7280;
-            padding: 4px;
-        }
-
-        .close-modal:hover {
-            color: #1a1a1a;
-        }
-
-        /* Alerts */
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .alert-error {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-
-        .alert-success {
-            background: #f0fdf4;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-            color: #6b7280;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .empty-state-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #374151;
-        }
-
-        .empty-state-description {
-            font-size: 14px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 16px;
-            }
-
-            .header-content {
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .nav {
-                gap: 16px;
-            }
-
-            .search-input {
-                width: 200px;
-            }
-
-            .auth-card {
-                padding: 32px 24px;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .subscription-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                padding: 24px;
-                margin: 16px;
-            }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
-<!-- Header -->
-<header class="header">
-    <div class="container">
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">📊</div>
-                SubTrack
-            </div>
+<div id="root"></div>
+<script type="text/babel">
+    const { useState, useEffect, useContext, createContext, useRef } = React;
+    const { createRoot } = ReactDOM;
 
-            <nav class="nav" id="mainNav" style="display: none;">
-                <a href="#" class="nav-link active" id="homeLink">Home</a>
-                <a href="#" class="nav-link" id="subscriptionsLink">Subscriptions</a>
-                <a href="#" class="nav-link" id="browseLink">Browse</a>
-            </nav>
+    // API Configuration
+    const API_BASE_URL = "http://localhost:8080/api";
 
-            <div class="user-menu">
-                <input type="text" class="search-input" id="headerSearch" placeholder="Search..." style="display: none;">
-                <div class="user-avatar" id="userAvatar" style="display: none;">U</div>
-                <button class="btn btn-primary" id="loginBtn">Login</button>
-                <button class="btn btn-secondary" id="registerBtn">Register</button>
-                <button class="btn btn-danger" id="logoutBtn" style="display: none;">Logout</button>
-            </div>
-        </div>
-    </div>
-</header>
+    // Enhanced Toast System
+    const showToast = (message, type = 'info') => {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        toast.innerHTML = `<span style="margin-right: 8px;">${icon}</span>${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    };
 
-<main class="main">
-    <div class="container">
-        <!-- Login Form -->
-        <div id="loginForm" class="auth-container">
-            <div class="auth-card">
-                <h1 class="auth-title">Welcome back</h1>
-                <div id="loginError" class="alert alert-error hidden"></div>
-                <form id="loginFormElement">
-                    <div class="form-group">
-                        <label class="form-label" for="loginUsername">Username</label>
-                        <input type="text" id="loginUsername" class="form-input" placeholder="Enter your username" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                </form>
-                <div class="auth-link">
-                    <a href="#" id="showRegisterLink">Don't have an account? Sign up</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Register Form -->
-        <div id="registerForm" class="auth-container hidden">
-            <div class="auth-card">
-                <h1 class="auth-title">Create your account</h1>
-                <div id="registerError" class="alert alert-error hidden"></div>
-                <form id="registerFormElement">
-                    <div class="form-group">
-                        <label class="form-label" for="registerFirstName">First Name</label>
-                        <input type="text" id="registerFirstName" class="form-input" placeholder="Enter your first name" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="registerLastName">Last Name</label>
-                        <input type="text" id="registerLastName" class="form-input" placeholder="Enter your last name" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="registerUsername">Username</label>
-                        <input type="text" id="registerUsername" class="form-input" placeholder="Choose a username" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="registerEmail">Email</label>
-                        <input type="email" id="registerEmail" class="form-input" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="registerPassword">Password</label>
-                        <input type="password" id="registerPassword" class="form-input" placeholder="Create a password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Register</button>
-                </form>
-                <div class="auth-link">
-                    <a href="#" id="showLoginLink">Already have an account? Login</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dashboard -->
-        <div id="dashboard" class="hidden">
-            <!-- Page Header -->
-            <div class="page-header">
-                <h1 class="page-title">Dashboard</h1>
-                <p class="page-subtitle">Manage your subscriptions and track your spending</p>
-            </div>
-
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="totalCost">$0.00</div>
-                    <div class="stat-label">Monthly Cost</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="activeCount">0</div>
-                    <div class="stat-label">Active Subscriptions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="averageCost">$0.00</div>
-                    <div class="stat-label">Average Cost</div>
-                </div>
-            </div>
-
-            <!-- My Subscriptions -->
-            <div class="content-card">
-                <h2 class="card-title">My Subscriptions</h2>
-                <div id="userSubscriptions" class="subscription-grid"></div>
-            </div>
-
-            <!-- Browse Subscriptions -->
-            <div class="content-card">
-                <h2 class="card-title">Browse Subscriptions</h2>
-                <p class="page-subtitle" style="margin-bottom: 24px;">Explore a variety of subscription services tailored to your interests.</p>
-
-                <div class="search-section">
-                    <input type="text" class="search-bar" id="searchInput" placeholder="Search for subscriptions">
-                    <div class="filter-tabs" id="categoryTabs"></div>
-                </div>
-
-                <div id="availableSubscriptions" class="subscription-grid"></div>
-            </div>
-        </div>
-    </div>
-</main>
-
-<!-- Profile Modal -->
-<div id="profileModal" class="modal hidden">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Profile Settings</h2>
-            <button class="close-modal" id="closeProfile">&times;</button>
-        </div>
-        <div id="profileError" class="alert alert-error hidden"></div>
-        <div id="profileSuccess" class="alert alert-success hidden"></div>
-        <form id="profileForm">
-            <div class="form-group">
-                <label class="form-label" for="profileUsername">Username</label>
-                <input type="text" id="profileUsername" class="form-input" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profileEmail">Email</label>
-                <input type="email" id="profileEmail" class="form-input" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profileFirstName">First Name</label>
-                <input type="text" id="profileFirstName" class="form-input" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profileLastName">Last Name</label>
-                <input type="text" id="profileLastName" class="form-input" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="profilePassword">New Password (leave empty to keep current)</label>
-                <input type="password" id="profilePassword" class="form-input">
-            </div>
-            <button type="submit" class="btn btn-primary">Update Profile</button>
-        </form>
-    </div>
-</div>
-
-<!-- Add Subscription Modal -->
-<div id="addSubscriptionModal" class="modal hidden">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Add Subscription</h2>
-            <button class="close-modal" id="closeAddSubscription">&times;</button>
-        </div>
-        <div id="addSubscriptionError" class="alert alert-error hidden"></div>
-        <form id="addSubscriptionForm">
-            <input type="hidden" id="selectedSubscriptionId">
-            <div class="form-group">
-                <label class="form-label" for="startDate">Start Date</label>
-                <input type="date" id="startDate" class="form-input" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="nextBillingDate">Next Billing Date</label>
-                <input type="date" id="nextBillingDate" class="form-input" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="notes">Notes (optional)</label>
-                <textarea id="notes" class="form-input" rows="3" placeholder="Add any notes about this subscription"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Add Subscription</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    const API_BASE = 'http://localhost:8080';
-
-    let currentUser = null;
-    let authToken = localStorage.getItem('authToken');
-    let allSubscriptions = [];
-    let userSubscriptions = [];
-    let categories = [];
-
-    // DOM Elements
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const dashboard = document.getElementById('dashboard');
-    const mainNav = document.getElementById('mainNav');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const userAvatar = document.getElementById('userAvatar');
-    const headerSearch = document.getElementById('headerSearch');
-
-    // Initialize app
-    document.addEventListener('DOMContentLoaded', function() {
-        if (authToken) {
-            showDashboard();
-            loadUserProfile();
-            loadDashboardData();
-        } else {
-            showLogin();
+    // API Service (same as before but with enhanced error handling)
+    class ApiService {
+        constructor() {
+            this.baseURL = API_BASE_URL;
         }
-        setupEventListeners();
-    });
 
-    function setupEventListeners() {
-        // Navigation
-        loginBtn.addEventListener('click', showLogin);
-        registerBtn.addEventListener('click', showRegister);
-        logoutBtn.addEventListener('click', logout);
-        userAvatar.addEventListener('click', showProfile);
+        async request(endpoint, options = {}) {
+            const url = `${this.baseURL}${endpoint}`;
+            const token = localStorage.getItem('accessToken');
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` }),
+                },
+                ...options,
+            };
+            console.log(`🚀 API Request: ${config.method || 'GET'} ${url}`);
+            try {
+                const response = await fetch(url, config);
+                console.log(`📡 API Response: ${response.status} ${response.statusText}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('✅ API Success:', data);
+                return data;
+            } catch (error) {
+                console.error('❌ API Error:', error);
+                throw error;
+            }
+        }
 
-        // Auth links
-        document.getElementById('showRegisterLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            showRegister();
-        });
-        document.getElementById('showLoginLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            showLogin();
-        });
+        // Auth methods
+        async login(credentials) {
+            return this.request('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify(credentials),
+            });
+        }
 
-        // Forms
-        document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
-        document.getElementById('registerFormElement').addEventListener('submit', handleRegister);
-        document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
-        document.getElementById('addSubscriptionForm').addEventListener('submit', handleAddSubscription);
+        async register(userData) {
+            return this.request('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify(userData),
+            });
+        }
 
-        // Modals
-        document.getElementById('closeProfile').addEventListener('click', hideProfile);
-        document.getElementById('closeAddSubscription').addEventListener('click', hideAddSubscription);
+        async logout() {
+            return this.request('/auth/logout', {
+                method: 'POST',
+            });
+        }
 
-        // Search
-        document.getElementById('searchInput').addEventListener('input', filterSubscriptions);
-        headerSearch.addEventListener('input', filterSubscriptions);
+        // User methods
+        async getUserProfile() {
+            return this.request('/users/profile');
+        }
 
-        // Modal close on outside click
-        document.getElementById('profileModal').addEventListener('click', function(e) {
-            if (e.target === this) hideProfile();
-        });
-        document.getElementById('addSubscriptionModal').addEventListener('click', function(e) {
-            if (e.target === this) hideAddSubscription();
-        });
+        async updateUserProfile(userData) {
+            return this.request('/users/profile', {
+                method: 'PUT',
+                body: JSON.stringify(userData),
+            });
+        }
+
+        // Admin user methods
+        async getAllUsers(params = {}) {
+            const queryParams = new URLSearchParams();
+            if (params.page !== undefined) queryParams.append('page', params.page);
+            if (params.size !== undefined) queryParams.append('size', params.size);
+            if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+            if (params.sortDir) queryParams.append('sortDir', params.sortDir);
+            const query = queryParams.toString();
+            return this.request(`/admin/users${query ? `?${query}` : ''}`);
+        }
+
+        async promoteUser(userId) {
+            return this.request(`/admin/users/${userId}/promote`, {
+                method: 'POST',
+            });
+        }
+
+        async deactivateUser(userId) {
+            return this.request(`/admin/users/${userId}`, {
+                method: 'DELETE',
+            });
+        }
+
+        // Available subscriptions
+        async getAvailableSubscriptions() {
+            return this.request('/subscriptions/available');
+        }
+
+        async getSubscriptionCategories() {
+            return this.request('/subscriptions/available/categories');
+        }
+
+        // Admin subscription methods
+        async createSubscription(subscriptionData) {
+            return this.request('/subscriptions/admin', {
+                method: 'POST',
+                body: JSON.stringify(subscriptionData),
+            });
+        }
+
+        async getAllSubscriptionsAdmin(params = {}) {
+            const queryParams = new URLSearchParams();
+            if (params.page !== undefined) queryParams.append('page', params.page);
+            if (params.size !== undefined) queryParams.append('size', params.size);
+            if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+            if (params.sortDir) queryParams.append('sortDir', params.sortDir);
+            if (params.isActive !== undefined) queryParams.append('isActive', params.isActive);
+            const query = queryParams.toString();
+            return this.request(`/subscriptions/admin/all${query ? `?${query}` : ''}`);
+        }
+
+        async deleteSubscription(id) {
+            return this.request(`/subscriptions/admin/${id}`, {
+                method: 'DELETE',
+            });
+        }
+
+        async activateSubscription(id) {
+            return this.request(`/subscriptions/admin/${id}/activate`, {
+                method: 'POST',
+            });
+        }
+
+        // User subscriptions
+        async createUserSubscription(subscriptionData) {
+            return this.request('/user-subscriptions', {
+                method: 'POST',
+                body: JSON.stringify(subscriptionData),
+            });
+        }
+
+        async getUserSubscriptions() {
+            return this.request('/user-subscriptions');
+        }
+
+        async deleteUserSubscription(id) {
+            return this.request(`/user-subscriptions/${id}`, {
+                method: 'DELETE',
+            });
+        }
+
+        async getMonthlyCost() {
+            return this.request('/user-subscriptions/monthly-cost');
+        }
+
+        // Admin user subscription methods
+        async getAllUserSubscriptionsAdmin(params = {}) {
+            const queryParams = new URLSearchParams();
+            if (params.page !== undefined) queryParams.append('page', params.page);
+            if (params.size !== undefined) queryParams.append('size', params.size);
+            if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+            if (params.sortDir) queryParams.append('sortDir', params.sortDir);
+            const query = queryParams.toString();
+            return this.request(`/user-subscriptions/admin/all${query ? `?${query}` : ''}`);
+        }
+
+        async sendReminders() {
+            return this.request('/user-subscriptions/admin/send-reminders', {
+                method: 'POST',
+            });
+        }
     }
+    const apiService = new ApiService();
 
-    // API Functions
-    async function apiCall(endpoint, options = {}) {
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                ...(authToken && { 'Authorization': `Bearer ${authToken}` })
-            },
-            ...options
-        };
+    // Enhanced Connection Status Component
+    const ConnectionStatus = () => {
+        const [isConnected, setIsConnected] = useState(false);
+        const [isChecking, setIsChecking] = useState(false);
 
-        try {
-            const response = await fetch(`${API_BASE}${endpoint}`, config);
-            const contentType = response.headers.get('content-type');
-            let data;
+        useEffect(() => {
+            const checkConnection = async () => {
+                setIsChecking(true);
+                try {
+                    await apiService.getAvailableSubscriptions();
+                    setIsConnected(true);
+                } catch (error) {
+                    setIsConnected(false);
+                } finally {
+                    setIsChecking(false);
+                }
+            };
+            checkConnection();
+            const interval = setInterval(checkConnection, 30000);
+            return () => clearInterval(interval);
+        }, []);
 
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                const text = await response.text();
-                if (text.includes('Invalid CORS request') || text.includes('CORS')) {
-                    throw new Error('CORS Error: Please check the backend CORS configuration.');
-                } else if (response.status === 404) {
-                    throw new Error('API endpoint not found. Please check if the API Gateway is running.');
-                } else {
-                    throw new Error(`Server error: ${text.substring(0, 100)}`);
+        return (
+            <div className={`status-indicator ${isConnected ? 'status-connected' : 'status-disconnected'}`}>
+                {isChecking && <span className="pulse">🔄</span>}
+                {isConnected ? '✅ Backend Connected' : '❌ Backend Disconnected'}
+            </div>
+        );
+    };
+
+    // Auth Context (same as before)
+    const AuthContext = createContext();
+
+    const AuthProvider = ({ children }) => {
+        const [user, setUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+            const token = localStorage.getItem('accessToken');
+            const userData = localStorage.getItem('user');
+            if (token && userData) {
+                try {
+                    setUser(JSON.parse(userData));
+                } catch (error) {
+                    console.error('Error parsing user data from localStorage:', error);
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('user');
                 }
             }
+            setIsLoading(false);
+        }, []);
 
-            if (!response.ok) {
-                throw new Error(data?.message || `HTTP ${response.status}: ${response.statusText}`);
+        const login = async (username, password) => {
+            try {
+                const response = await apiService.login({ username, password });
+                if (response.success && response.data) {
+                    const { accessToken, refreshToken, ...userData } = response.data;
+                    if (accessToken && userData) {
+                        localStorage.setItem('accessToken', accessToken);
+                        if (refreshToken) {
+                            localStorage.setItem('refreshToken', refreshToken);
+                        }
+                        localStorage.setItem('user', JSON.stringify(userData));
+                        setUser(userData);
+                        showToast(`Welcome back, ${userData.firstName || userData.username}! 🎉`, 'success');
+                        return { success: true };
+                    }
+                }
+                throw new Error('Invalid response format from server');
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast(error.message || 'Login failed', 'error');
+                throw error;
             }
-
-            return data;
-        } catch (error) {
-            if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                throw new Error('Cannot connect to server. Please check if the API Gateway is running on port 8080.');
-            }
-            throw error;
-        }
-    }
-
-    // Authentication
-    async function handleLogin(e) {
-        e.preventDefault();
-        const username = document.getElementById('loginUsername').value;
-        const password = document.getElementById('loginPassword').value;
-
-        try {
-            const response = await apiCall('/api/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({ username, password })
-            });
-
-            authToken = response.data.token;
-            currentUser = response.data;
-            localStorage.setItem('authToken', authToken);
-
-            showDashboard();
-            loadDashboardData();
-            hideError('loginError');
-        } catch (error) {
-            showError('loginError', error.message);
-        }
-    }
-
-    async function handleRegister(e) {
-        e.preventDefault();
-        const formData = {
-            username: document.getElementById('registerUsername').value,
-            email: document.getElementById('registerEmail').value,
-            firstName: document.getElementById('registerFirstName').value,
-            lastName: document.getElementById('registerLastName').value,
-            password: document.getElementById('registerPassword').value
         };
 
-        try {
-            await apiCall('/api/auth/register', {
-                method: 'POST',
-                body: JSON.stringify(formData)
-            });
-
-            showSuccess('registerError', 'Registration successful! Please login.');
-            setTimeout(showLogin, 2000);
-        } catch (error) {
-            showError('registerError', error.message);
-        }
-    }
-
-    function logout() {
-        authToken = null;
-        currentUser = null;
-        localStorage.removeItem('authToken');
-        showLogin();
-    }
-
-    // Profile Management
-    async function loadUserProfile() {
-        try {
-            const response = await apiCall('/api/users/profile');
-            currentUser = response;
-
-            // Update UI
-            userAvatar.textContent = currentUser.firstName[0].toUpperCase();
-
-            // Populate profile form
-            document.getElementById('profileUsername').value = currentUser.username;
-            document.getElementById('profileEmail').value = currentUser.email;
-            document.getElementById('profileFirstName').value = currentUser.firstName;
-            document.getElementById('profileLastName').value = currentUser.lastName;
-        } catch (error) {
-            console.error('Failed to load profile:', error);
-        }
-    }
-
-    async function handleProfileUpdate(e) {
-        e.preventDefault();
-        const formData = {
-            username: document.getElementById('profileUsername').value,
-            email: document.getElementById('profileEmail').value,
-            firstName: document.getElementById('profileFirstName').value,
-            lastName: document.getElementById('profileLastName').value
+        const register = async (userData) => {
+            try {
+                const response = await apiService.register(userData);
+                if (response.success) {
+                    showToast('Registration successful! Please login. 🎊', 'success');
+                    return { success: true };
+                }
+                throw new Error('Registration failed');
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast(error.message || 'Registration failed', 'error');
+                throw error;
+            }
         };
 
-        const password = document.getElementById('profilePassword').value;
-        if (password) {
-            formData.password = password;
+        const logout = async () => {
+            try {
+                await apiService.logout();
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+                setUser(null);
+                showToast('See you later! 👋', 'info');
+            }
+        };
+
+        const isAdmin = user?.role === 'ADMIN';
+
+        return (
+            <AuthContext.Provider value={{
+                user,
+                login,
+                register,
+                logout,
+                isLoading,
+                isAdmin,
+            }}>
+                {children}
+            </AuthContext.Provider>
+        );
+    };
+
+    const useAuth = () => {
+        const context = useContext(AuthContext);
+        if (!context) {
+            throw new Error('useAuth must be used within an AuthProvider');
         }
+        return context;
+    };
 
-        try {
-            await apiCall('/api/users/profile', {
-                method: 'PUT',
-                body: JSON.stringify(formData)
-            });
-
-            showSuccess('profileSuccess', 'Profile updated successfully!');
-            hideError('profileError');
-            document.getElementById('profilePassword').value = '';
-            loadUserProfile();
-        } catch (error) {
-            showError('profileError', error.message);
-            hideSuccess('profileSuccess');
-        }
-    }
-
-    // Dashboard Data
-    async function loadDashboardData() {
-        await Promise.all([
-            loadUserSubscriptions(),
-            loadAvailableSubscriptions(),
-            loadCategories(),
-            loadMonthlyCost()
-        ]);
-    }
-
-    async function loadUserSubscriptions() {
-        try {
-            const response = await apiCall('/api/user-subscriptions');
-            userSubscriptions = response.subscriptions || [];
-            renderUserSubscriptions();
-        } catch (error) {
-            console.error('Failed to load user subscriptions:', error);
-        }
-    }
-
-    async function loadAvailableSubscriptions() {
-        try {
-            const response = await apiCall('/api/subscriptions');
-            allSubscriptions = response.subscriptions || [];
-            renderAvailableSubscriptions();
-        } catch (error) {
-            console.error('Failed to load subscriptions:', error);
-        }
-    }
-
-    async function loadCategories() {
-        try {
-            const response = await apiCall('/api/subscriptions/categories');
-            categories = response.categories || [];
-            renderCategoryTabs();
-        } catch (error) {
-            console.error('Failed to load categories:', error);
-        }
-    }
-
-    async function loadMonthlyCost() {
-        try {
-            const response = await apiCall('/api/user-subscriptions/monthly-cost');
-            const summary = response.summary;
-
-            document.getElementById('totalCost').textContent = `${summary.totalMonthlyCost.toFixed(2)} ${summary.currency}`;
-            document.getElementById('activeCount').textContent = summary.activeSubscriptionCount;
-            document.getElementById('averageCost').textContent = `${summary.averageCostPerSubscription.toFixed(2)} ${summary.currency}`;
-        } catch (error) {
-            console.error('Failed to load monthly cost:', error);
-        }
-    }
-
-    // Rendering Functions
-    function renderUserSubscriptions() {
-        const container = document.getElementById('userSubscriptions');
-
-        if (userSubscriptions.length === 0) {
-            container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📱</div>
-                        <div class="empty-state-title">No subscriptions yet</div>
-                        <div class="empty-state-description">Browse available subscriptions below to get started!</div>
-                    </div>
-                `;
-            return;
-        }
-
-        container.innerHTML = userSubscriptions.map(sub => `
-                <div class="subscription-card">
-                    <div class="subscription-header">
-                        <img src="${sub.logoUrl}" alt="${sub.subscriptionName}" class="subscription-logo"
-                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzNiODJmNiIvPgo8dGV4dCB4PSIyNCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4ke3N1Yi5zdWJzY3JpcHRpb25OYW1lWzBdfTwvdGV4dD4KPHN2Zz4K'">
-                        <div class="subscription-info">
-                            <div class="subscription-name">${sub.subscriptionName}</div>
-                            <div class="subscription-meta">Next billing: ${new Date(sub.nextBillingDate).toLocaleDateString()}</div>
-                        </div>
-                        <div class="subscription-category">${sub.subscriptionCategory}</div>
-                    </div>
-                    <div class="subscription-price">${sub.monthlyPrice.toFixed(2)} ${sub.currency}</div>
-                    ${sub.notes ? `<div class="subscription-description">${sub.notes}</div>` : ''}
-                    <div class="subscription-actions">
-                        <a href="${sub.websiteUrl}" target="_blank" class="btn btn-secondary">Visit Site</a>
-                        <button class="btn btn-danger" onclick="removeSubscription(${sub.id})">Remove</button>
+    // Enhanced Loading Component
+    const Loading = ({ message = 'Loading...' }) => (
+        <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+                <div className="loading-spinner mx-auto mb-6"></div>
+                <p className="text-gray-600 text-lg font-medium">{message}</p>
+                <div className="mt-4">
+                    <div className="progress-bar w-48 mx-auto">
+                        <div className="progress-fill" style={{width: '60%'}}></div>
                     </div>
                 </div>
-            `).join('');
-    }
+            </div>
+        </div>
+    );
 
-    function renderAvailableSubscriptions(subscriptionsToRender = allSubscriptions) {
-        const container = document.getElementById('availableSubscriptions');
+    // Enhanced Login Component
+    const Login = () => {
+        const [username, setUsername] = useState('');
+        const [password, setPassword] = useState('');
+        const [isLoading, setIsLoading] = useState(false);
+        const [isRegister, setIsRegister] = useState(false);
+        const [registerData, setRegisterData] = useState({
+            firstName: '',
+            lastName: '',
+            email: '',
+        });
+        const { login, register } = useAuth();
 
-        if (subscriptionsToRender.length === 0) {
-            container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔍</div>
-                        <div class="empty-state-title">No subscriptions found</div>
-                        <div class="empty-state-description">Try adjusting your search or filter criteria</div>
-                    </div>
-                `;
-            return;
-        }
-
-        container.innerHTML = subscriptionsToRender.map(sub => {
-            const isSubscribed = userSubscriptions.some(userSub => userSub.subscriptionId === sub.id);
-
-            return `
-                    <div class="subscription-card">
-                        <div class="subscription-header">
-                            <img src="${sub.logoUrl}" alt="${sub.name}" class="subscription-logo"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzNiODJmNiIvPgo8dGV4dCB4PSIyNCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4ke3N1Yi5uYW1lWzBdfTwvdGV4dD4KPHN2Zz4K'">
-                            <div class="subscription-info">
-                                <div class="subscription-name">${sub.name}</div>
-                            </div>
-                            <div class="subscription-category">${sub.category}</div>
-                        </div>
-                        <div class="subscription-price">${sub.price.toFixed(2)} ${sub.currency}</div>
-                        <div class="subscription-description">${sub.description}</div>
-                        <div class="subscription-actions">
-                            <a href="${sub.websiteUrl}" target="_blank" class="btn btn-secondary">Visit Site</a>
-                            <button class="btn btn-primary" onclick="showAddSubscription(${sub.id}, '${sub.name}')" ${isSubscribed ? 'disabled' : ''}>
-                                ${isSubscribed ? 'Subscribed' : 'Subscribe'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-        }).join('');
-    }
-
-    function renderCategoryTabs() {
-        const container = document.getElementById('categoryTabs');
-        const allTab = '<div class="filter-tab active" onclick="filterByCategory(\'all\', this)">All</div>';
-        const categoryTabs = categories.map(category =>
-            `<div class="filter-tab" onclick="filterByCategory('${category}', this)">${category}</div>`
-        ).join('');
-
-        container.innerHTML = allTab + categoryTabs;
-    }
-
-    // Subscription Management
-    async function removeSubscription(subscriptionId) {
-        if (!confirm('Are you sure you want to remove this subscription?')) return;
-
-        try {
-            await apiCall(`/api/user-subscriptions/${subscriptionId}`, {
-                method: 'DELETE'
-            });
-
-            await loadUserSubscriptions();
-            await loadMonthlyCost();
-            renderAvailableSubscriptions();
-        } catch (error) {
-            alert('Failed to remove subscription: ' + error.message);
-        }
-    }
-
-    function showAddSubscription(subscriptionId, subscriptionName) {
-        document.getElementById('selectedSubscriptionId').value = subscriptionId;
-        document.getElementById('addSubscriptionModal').classList.remove('hidden');
-
-        // Set default dates
-        const today = new Date().toISOString().split('T')[0];
-        const nextMonth = new Date();
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-        const nextMonthStr = nextMonth.toISOString().split('T')[0];
-
-        document.getElementById('startDate').value = today;
-        document.getElementById('nextBillingDate').value = nextMonthStr;
-    }
-
-    async function handleAddSubscription(e) {
-        e.preventDefault();
-
-        const formData = {
-            subscriptionId: parseInt(document.getElementById('selectedSubscriptionId').value),
-            startDate: document.getElementById('startDate').value,
-            nextBillingDate: document.getElementById('nextBillingDate').value,
-            notes: document.getElementById('notes').value
+        const handleLogin = async (e) => {
+            e.preventDefault();
+            if (!username || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            setIsLoading(true);
+            try {
+                await login(username, password);
+            } catch (error) {
+                // Error is already handled in the login function
+            } finally {
+                setIsLoading(false);
+            }
         };
 
-        try {
-            await apiCall('/api/user-subscriptions', {
-                method: 'POST',
-                body: JSON.stringify(formData)
+        const handleRegister = async (e) => {
+            e.preventDefault();
+            if (!username || !password || !registerData.firstName || !registerData.lastName || !registerData.email) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            setIsLoading(true);
+            try {
+                await register({
+                    username,
+                    password,
+                    firstName: registerData.firstName,
+                    lastName: registerData.lastName,
+                    email: registerData.email,
+                });
+                setIsRegister(false);
+            } catch (error) {
+                // Error is already handled in the register function
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        return (
+            <div className="min-h-screen animated-bg flex items-center justify-center p-4">
+                <div className="max-w-md w-full">
+                    <div className="card p-8 backdrop-filter backdrop-blur-sm bg-white/90">
+                        <div className="text-center mb-8">
+                            <div className="w-20 h-20 gradient-bg-1 rounded-full flex items-center justify-center mx-auto mb-4 glow">
+                                <i data-lucide="credit-card" className="w-10 h-10 text-white"></i>
+                            </div>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                                {isRegister ? 'Join Us Today! 🚀' : 'Welcome Back! 👋'}
+                            </h2>
+                            <p className="text-gray-600">Subscription Management System</p>
+                        </div>
+                        <form className="space-y-6" onSubmit={isRegister ? handleRegister : handleLogin}>
+                            {isRegister && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                                                First Name
+                                            </label>
+                                            <input
+                                                id="firstName"
+                                                type="text"
+                                                value={registerData.firstName}
+                                                onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                                placeholder="First name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                                                Last Name
+                                            </label>
+                                            <input
+                                                id="lastName"
+                                                type="text"
+                                                value={registerData.lastName}
+                                                onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                                placeholder="Last name"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Email Address
+                                        </label>
+                                        <input
+                                            id="email"
+                                            type="email"
+                                            value={registerData.email}
+                                            onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                            placeholder="Enter your email"
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            <div>
+                                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Username
+                                </label>
+                                <input
+                                    id="username"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    placeholder="Enter your username"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Password
+                                </label>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    placeholder="Enter your password"
+                                />
+                            </div>
+                            <div>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full btn btn-primary text-lg py-4 disabled:opacity-50"
+                                >
+                                    {isLoading ? (
+                                        <span className="flex items-center justify-center">
+                                            <div className="loading-spinner w-5 h-5 mr-3"></div>
+                                            Please wait...
+                                        </span>
+                                    ) : (
+                                        isRegister ? '🎉 Create Account' : '🚀 Sign In'
+                                    )}
+                                </button>
+                            </div>
+                            <div className="text-center">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsRegister(!isRegister)}
+                                    className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+                                >
+                                    {isRegister ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Enhanced Dashboard Component with Charts
+    const Dashboard = () => {
+        const { user } = useAuth();
+        const [subscriptions, setSubscriptions] = useState([]);
+        const [monthlyCost, setMonthlyCost] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+        const spendingChartRef = useRef(null);
+        const billingPeriodChartRef = useRef(null); // Changed from categoryChartRef
+        const spendingChartInstance = useRef(null);
+        const billingPeriodChartInstance = useRef(null); // Changed from categoryChartInstance
+
+        useEffect(() => {
+            fetchDashboardData();
+        }, []);
+
+        useEffect(() => {
+            if (subscriptions.length > 0) {
+                createSpendingChart();
+                createBillingPeriodChart(); // Changed to billing period chart
+            }
+            return () => {
+                if (spendingChartInstance.current) {
+                    spendingChartInstance.current.destroy();
+                }
+                if (billingPeriodChartInstance.current) { // Changed
+                    billingPeriodChartInstance.current.destroy(); // Changed
+                }
+            };
+        }, [subscriptions]);
+
+        const fetchDashboardData = async () => {
+            try {
+                const [subscriptionsResponse, monthlyCostResponse] = await Promise.all([
+                    apiService.getUserSubscriptions(),
+                    apiService.getMonthlyCost(),
+                ]);
+                if (subscriptionsResponse.success) {
+                    setSubscriptions(subscriptionsResponse.subscriptions || []);
+                }
+                if (monthlyCostResponse.success) {
+                    setMonthlyCost(monthlyCostResponse.summary);
+                }
+            } catch (error) {
+                console.error('Failed to fetch dashboard data:', error);
+                showToast('Failed to load dashboard data', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const createSpendingChart = () => {
+            if (spendingChartInstance.current) {
+                spendingChartInstance.current.destroy();
+            }
+            const ctx = spendingChartRef.current.getContext('2d');
+            const activeSubscriptions = subscriptions.filter(sub => sub.isActive);
+            spendingChartInstance.current = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: activeSubscriptions.map(sub => sub.subscriptionName),
+                    datasets: [{
+                        data: activeSubscriptions.map(sub => sub.monthlyPrice || 0),
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)', // blue
+                            'rgba(139, 92, 246, 0.8)', // purple
+                            'rgba(236, 72, 153, 0.8)', // pink
+                            'rgba(245, 158, 11, 0.8)', // orange
+                            'rgba(16, 185, 129, 0.8)', // green
+                            'rgba(239, 68, 68, 0.8)', // red
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(139, 92, 246, 1)',
+                            'rgba(236, 72, 153, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(239, 68, 68, 1)',
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        const createBillingPeriodChart = () => { // Renamed function
+            if (billingPeriodChartInstance.current) { // Changed
+                billingPeriodChartInstance.current.destroy(); // Changed
+            }
+            const ctx = billingPeriodChartRef.current.getContext('2d'); // Changed
+            const billingPeriodCounts = subscriptions.reduce((acc, sub) => {
+                // Assuming 'billingPeriod' exists on subscription objects, default to 'UNKNOWN' if not
+                const period = sub.billingPeriod || 'UNKNOWN';
+                acc[period] = (acc[period] || 0) + 1;
+                return acc;
+            }, {});
+
+            billingPeriodChartInstance.current = new Chart(ctx, { // Changed
+                type: 'bar',
+                data: {
+                    labels: Object.keys(billingPeriodCounts),
+                    datasets: [{
+                        label: 'Number of Subscriptions',
+                        data: Object.values(billingPeriodCounts),
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.8)', // Teal
+                            'rgba(153, 102, 255, 0.8)', // Violet
+                            'rgba(255, 159, 64, 0.8)',  // Orange
+                            'rgba(255, 99, 132, 0.8)',  // Red
+                            'rgba(54, 162, 235, 0.8)',  // Blue
+                            'rgba(201, 203, 207, 0.8)'  // Gray
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(201, 203, 207, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        if (isLoading) {
+            return <Loading message="Loading your awesome dashboard..." />;
+        }
+
+        const activeSubscriptions = subscriptions.filter(sub => sub.isActive);
+        const nextBillingDate = activeSubscriptions.length > 0
+            ? new Date(Math.min(...activeSubscriptions.map(sub => new Date(sub.nextBillingDate).getTime())))
+            : null;
+        const gradients = ['gradient-bg-1', 'gradient-bg-2', 'gradient-bg-3', 'gradient-bg-4'];
+
+        return (
+            <div className="space-y-8">
+                <div className="text-center">
+                    <h2 className="text-4xl font-bold text-gray-900 mb-2">
+                        Welcome back, {user?.firstName || user?.username}! 🎉
+                    </h2>
+                    <p className="text-xl text-gray-600">Your personal subscription insights</p>
+                </div>
+
+                {/* Removed Enhanced Stats Cards */}
+
+                {/* Charts and Recent Subscriptions */}
+                <div className="grid gap-8 lg:grid-cols-2">
+                    {/* Spending Chart */}
+                    {activeSubscriptions.length > 0 && (
+                        <div className="card p-6">
+                            <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                                <i data-lucide="pie-chart" className="w-6 h-6 mr-2 text-blue-600"></i>
+                                Spending Breakdown
+                            </h3>
+                            <div className="chart-container">
+                                <canvas ref={spendingChartRef}></canvas>
+                            </div>
+                        </div>
+                    )}
+                    {/* Subscriptions by Billing Period Chart */}
+                    {subscriptions.length > 0 && (
+                        <div className="card p-6">
+                            <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                                <i data-lucide="calendar-check" className="w-6 h-6 mr-2 text-purple-600"></i> {/* Changed icon */}
+                                Subscriptions by Billing Period
+                            </h3>
+                            <div className="chart-container">
+                                <canvas ref={billingPeriodChartRef}></canvas> {/* Changed */}
+                            </div>
+                        </div>
+                    )}
+                    {/* Recent Subscriptions */}
+                    <div className="card p-6 lg:col-span-2"> {/* Make this span full width if only one chart */}
+                        <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i data-lucide="clock" className="w-6 h-6 mr-2 text-green-600"></i>
+                            Recent Subscriptions
+                        </h3>
+                        {activeSubscriptions.length > 0 ? (
+                            <div className="space-y-4">
+                                {activeSubscriptions.slice(0, 5).map((subscription, index) => (
+                                    <div key={subscription.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all">
+                                        <div className="flex items-center space-x-4">
+                                            <div className={`w-12 h-12 ${gradients[index % gradients.length]} rounded-xl flex items-center justify-center`}>
+                                                <i data-lucide="credit-card" className="w-6 h-6 text-white"></i>
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-gray-900">{subscription.subscriptionName}</p>
+                                                <p className="text-sm text-gray-600">
+                                                    Next billing: {new Date(subscription.nextBillingDate).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="badge bg-green-100 text-green-800">
+                                                ACTIVE
+                                            </span>
+                                            <p className="text-sm font-semibold text-gray-900 mt-1">
+                                                {subscription.monthlyPrice?.toFixed(2)} AZN/month
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <div className="w-20 h-20 gradient-bg-6 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i data-lucide="credit-card" className="w-10 h-10 text-white"></i>
+                                </div>
+                                <h4 className="text-lg font-semibold text-gray-900 mb-2">No active subscriptions</h4>
+                                <p className="text-gray-600">Start by browsing our amazing services! 🚀</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Enhanced Admin Dashboard Component
+    const AdminDashboard = () => {
+        const { isAdmin } = useAuth();
+        const [stats, setStats] = useState(null);
+        const [usersData, setUsersData] = useState([]); // To hold all users for role distribution
+        const [isLoading, setIsLoading] = useState(true);
+        const systemStatsChartRef = useRef(null);
+        const userRoleChartRef = useRef(null);
+        const systemStatsChartInstance = useRef(null);
+        const userRoleChartInstance = useRef(null);
+
+        useEffect(() => {
+            if (!isAdmin) return;
+            fetchAdminStats();
+        }, [isAdmin]);
+
+        useEffect(() => {
+            if (stats && systemStatsChartRef.current) {
+                createSystemStatsChart();
+            }
+            if (usersData.length > 0 && userRoleChartRef.current) {
+                createUserRoleChart();
+            }
+            return () => {
+                if (systemStatsChartInstance.current) {
+                    systemStatsChartInstance.current.destroy();
+                }
+                if (userRoleChartInstance.current) {
+                    userRoleChartInstance.current.destroy();
+                }
+            };
+        }, [stats, usersData]);
+
+        const fetchAdminStats = async () => {
+            try {
+                const [usersResponse, subscriptionsResponse, userSubscriptionsResponse] = await Promise.all([
+                    apiService.getAllUsers({ page: 0, size: 1000 }),
+                    apiService.getAllSubscriptionsAdmin({ page: 0, size: 1000 }),
+                    apiService.getAllUserSubscriptionsAdmin({ page: 0, size: 1000 }),
+                ]);
+
+                const users = usersResponse.users || [];
+                const subscriptions = subscriptionsResponse.subscriptions || [];
+                const userSubscriptions = userSubscriptionsResponse.subscriptions || [];
+
+                setUsersData(users); // Store users data for the new chart
+
+                setStats({
+                    totalUsers: users.length,
+                    totalAdmins: users.filter(user => user.role === 'ADMIN').length,
+                    newUsersThisMonth: users.filter(user => {
+                        const userDate = new Date(user.createdAt);
+                        const now = new Date();
+                        return userDate.getMonth() === now.getMonth() && userDate.getFullYear() === now.getFullYear();
+                    }).length,
+                    totalSubscriptions: subscriptions.length,
+                    activeSubscriptions: subscriptions.filter(sub => sub.isActive).length,
+                    totalUserSubscriptions: userSubscriptions.length,
+                    activeUserSubscriptions: userSubscriptions.filter(sub => sub.isActive).length,
+                    monthlyRevenue: userSubscriptions
+                        .filter(sub => sub.isActive)
+                        .reduce((sum, sub) => sum + (sub.monthlyPrice || 0), 0),
+                });
+            } catch (error) {
+                console.error('Failed to fetch admin stats:', error);
+                showToast('Failed to load admin statistics', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const createSystemStatsChart = () => {
+            if (systemStatsChartInstance.current) {
+                systemStatsChartInstance.current.destroy();
+            }
+            const ctx = systemStatsChartRef.current.getContext('2d');
+            systemStatsChartInstance.current = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Users', 'Services', 'Active Subs', 'Revenue (AZN)'],
+                    datasets: [{
+                        label: 'System Statistics',
+                        data: [
+                            stats.totalUsers,
+                            stats.totalSubscriptions,
+                            stats.activeUserSubscriptions,
+                            stats.monthlyRevenue
+                        ],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',    // blue
+                            'rgba(139, 92, 246, 0.8)',    // purple
+                            'rgba(16, 185, 129, 0.8)',    // green
+                            'rgba(245, 158, 11, 0.8)',    // orange
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(139, 92, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)',
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        const createUserRoleChart = () => {
+            if (userRoleChartInstance.current) {
+                userRoleChartInstance.current.destroy();
+            }
+            const ctx = userRoleChartRef.current.getContext('2d');
+            const userRoles = usersData.reduce((acc, user) => {
+                acc[user.role] = (acc[user.role] || 0) + 1;
+                return acc;
+            }, {});
+
+            userRoleChartInstance.current = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(userRoles),
+                    datasets: [{
+                        data: Object.values(userRoles),
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)', // ADMIN - blue
+                            'rgba(107, 114, 128, 0.8)', // USER - gray
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(107, 114, 128, 1)',
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        if (!isAdmin) {
+            return (
+                <div className="text-center py-16">
+                    <div className="w-24 h-24 gradient-bg-2 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="shield-x" className="w-12 h-12 text-white"></i>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Access Denied</h2>
+                    <p className="text-xl text-gray-600">You don't have permission to access this page.</p>
+                </div>
+            );
+        }
+
+        if (isLoading) {
+            return <Loading message="Loading admin dashboard..." />;
+        }
+
+        const gradients = ['gradient-bg-1', 'gradient-bg-2', 'gradient-bg-3', 'gradient-bg-4', 'gradient-bg-5', 'gradient-bg-6'];
+
+        return (
+            <div className="space-y-8">
+                <div className="text-center">
+                    <h2 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard 👑</h2>
+                    <p className="text-xl text-gray-600">Comprehensive system insights</p>
+                </div>
+
+                {/* Removed Enhanced Admin Stats */}
+
+                {/* Admin Charts and Quick Actions */}
+                <div className="grid gap-8 lg:grid-cols-2">
+                    {/* System Statistics Chart */}
+                    <div className="card p-6">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i data-lucide="bar-chart-3" className="w-6 h-6 mr-2 text-blue-600"></i>
+                            Overall System Metrics
+                        </h3>
+                        <div className="chart-container">
+                            <canvas ref={systemStatsChartRef}></canvas>
+                        </div>
+                    </div>
+                    {/* User Role Distribution Chart */}
+                    {usersData.length > 0 && (
+                        <div className="card p-6">
+                            <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                                <i data-lucide="pie-chart" className="w-6 h-6 mr-2 text-orange-600"></i>
+                                User Role Distribution
+                            </h3>
+                            <div className="chart-container">
+                                <canvas ref={userRoleChartRef}></canvas>
+                            </div>
+                        </div>
+                    )}
+                    {/* Quick Actions */}
+                    <div className="card p-6 lg:col-span-2">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i data-lucide="zap" className="w-6 h-6 mr-2 text-yellow-600"></i>
+                            Quick Actions
+                        </h3>
+                        <div className="space-y-4">
+                            <div className="p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                    <div className={`w-8 h-8 gradient-bg-1 rounded-full flex items-center justify-center mr-2`}>
+                                        <i data-lucide="users" className="w-4 h-4 text-white"></i>
+                                    </div>
+                                    User Management
+                                </h4>
+                                <p className="text-gray-600 mb-3">Manage system users and permissions</p>
+                                <div className="flex items-center space-x-2">
+                                    <i data-lucide="trending-up" className="w-4 h-4 text-green-500"></i>
+                                    <span className="text-sm text-gray-600">
+                                        {stats?.newUsersThisMonth || 0} new users this month
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                    <div className={`w-8 h-8 gradient-bg-2 rounded-full flex items-center justify-center mr-2`}>
+                                        <i data-lucide="credit-card" className="w-4 h-4 text-white"></i>
+                                    </div>
+                                    Service Management
+                                </h4>
+                                <p className="text-gray-600 mb-3">Manage available subscription services</p>
+                                <div className="flex items-center space-x-2">
+                                    <i data-lucide="activity" className="w-4 h-4 text-blue-500"></i>
+                                    <span className="text-sm text-gray-600">
+                                        {stats?.activeSubscriptions || 0} active services
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                                    <div className={`w-8 h-8 gradient-bg-3 rounded-full flex items-center justify-center mr-2`}>
+                                        <i data-lucide="bar-chart-3" className="w-4 h-4 text-white"></i>
+                                    </div>
+                                    Subscription Monitoring
+                                </h4>
+                                <p className="text-gray-600 mb-3">Monitor user subscriptions and billing</p>
+                                <div className="flex items-center space-x-2">
+                                    <i data-lucide="dollar-sign" className="w-4 h-4 text-green-500"></i>
+                                    <span className="text-sm text-gray-600">
+                                        {stats?.monthlyRevenue?.toFixed(2) || '0.00'} AZN monthly revenue
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Enhanced Admin Users Component
+    const AdminUsers = () => {
+        const { isAdmin } = useAuth();
+        const [users, setUsers] = useState([]);
+        const [filteredUsers, setFilteredUsers] = useState([]);
+        const [searchTerm, setSearchTerm] = useState('');
+        const [selectedRole, setSelectedRole] = useState('All');
+        const [isLoading, setIsLoading] = useState(true);
+        const [currentPage, setCurrentPage] = useState(0);
+        const [totalPages, setTotalPages] = useState(0);
+
+        useEffect(() => {
+            if (!isAdmin) return;
+            fetchUsers();
+        }, [isAdmin, currentPage]);
+
+        useEffect(() => {
+            let filtered = users;
+            if (selectedRole !== 'All') {
+                filtered = filtered.filter(user => user.role === selectedRole);
+            }
+            if (searchTerm) {
+                filtered = filtered.filter(user =>
+                    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (user.firstName && user.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (user.lastName && user.lastName.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+            }
+            setFilteredUsers(filtered);
+        }, [users, selectedRole, searchTerm]);
+
+        const fetchUsers = async () => {
+            try {
+                const response = await apiService.getAllUsers({
+                    page: currentPage,
+                    size: 20,
+                    sortBy: 'id',
+                    sortDir: 'desc'
+                });
+                if (response.users) {
+                    setUsers(response.users);
+                    setTotalPages(response.totalPages || 1);
+                }
+            } catch (error) {
+                showToast('Failed to fetch users', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const handlePromoteUser = async (userId) => {
+            try {
+                const response = await apiService.promoteUser(userId);
+                if (response.success) {
+                    showToast('User promoted successfully! 🎉', 'success');
+                    fetchUsers();
+                }
+            } catch (error) {
+                showToast('Failed to promote user', 'error');
+            }
+        };
+
+        const handleDeactivateUser = async (userId) => {
+            if (!confirm('Are you sure you want to deactivate this user?')) {
+                return;
+            }
+            try {
+                const response = await apiService.deactivateUser(userId);
+                if (response.success) {
+                    showToast('User deactivated successfully', 'success');
+                    fetchUsers();
+                }
+            } catch (error) {
+                showToast('Failed to deactivate user', 'error');
+            }
+        };
+
+        if (!isAdmin) {
+            return (
+                <div className="text-center py-16">
+                    <div className="w-24 h-24 gradient-bg-2 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="shield-x" className="w-12 h-12 text-white"></i>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Access Denied</h2>
+                    <p className="text-xl text-gray-600">You don't have permission to access this page.</p>
+                </div>
+            );
+        }
+
+        if (isLoading) {
+            return <Loading message="Loading users..." />;
+        }
+
+        return (
+            <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-2">Users Management 👥</h2>
+                        <p className="text-xl text-gray-600">Manage system users and their permissions</p>
+                    </div>
+                </div>
+
+                {/* Enhanced Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                        <i data-lucide="search" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                        <input
+                            type="text"
+                            placeholder="Search users by name, username, or email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-12 pr-4 py-3 w-full border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        {['All', 'USER', 'ADMIN'].map((role) => (
+                            <button
+                                key={role}
+                                onClick={() => setSelectedRole(role)}
+                                className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all ${
+                                    selectedRole === role
+                                        ? 'bg-blue-600 text-white shadow-lg'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {role}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Enhanced Users Table */}
+                <div className="card p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-2xl font-semibold text-gray-900 flex items-center">
+                            <i data-lucide="users" className="w-6 h-6 mr-2 text-blue-600"></i>
+                            All Users ({filteredUsers.length})
+                        </h3>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <i data-lucide="filter" className="w-4 h-4"></i>
+                            <span>Filtered results</span>
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                            <tr className="border-b-2 border-gray-200">
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Username</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Name</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Email</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Role</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Status</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {filteredUsers.map((user, index) => (
+                                <tr key={user.id} className="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all">
+                                    <td className="py-4 px-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className={`w-10 h-10 gradient-bg-${(index % 6) + 1} rounded-full flex items-center justify-center`}>
+                                                    <span className="text-white font-semibold">
+                                                        {user.username.charAt(0).toUpperCase()}
+                                                    </span>
+                                            </div>
+                                            <span className="font-semibold text-gray-900">{user.username}</span>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-4 text-gray-600">
+                                        {user.firstName && user.lastName
+                                            ? `${user.firstName} ${user.lastName}`
+                                            : 'N/A'}
+                                    </td>
+                                    <td className="py-4 px-4 text-gray-600">{user.email}</td>
+                                    <td className="py-4 px-4">
+                                            <span className={`badge ${
+                                                user.role === 'ADMIN'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {user.role === 'ADMIN' ? '👑 ADMIN' : '👤 USER'}
+                                            </span>
+                                    </td>
+                                    <td className="py-4 px-4">
+                                            <span className={`badge ${
+                                                user.isActive
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {user.isActive ? '✅ Active' : '❌ Inactive'}
+                                            </span>
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <div className="flex space-x-2">
+                                            {user.role !== 'ADMIN' && (
+                                                <button
+                                                    onClick={() => handlePromoteUser(user.id)}
+                                                    className="btn btn-success text-xs px-3 py-1"
+                                                >
+                                                    <i data-lucide="shield" className="w-3 h-3 mr-1"></i>
+                                                    Promote
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => handleDeactivateUser(user.id)}
+                                                className="btn btn-danger text-xs px-3 py-1"
+                                            >
+                                                <i data-lucide="user-x" className="w-3 h-3 mr-1"></i>
+                                                Deactivate
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Enhanced Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-between items-center mt-6 pt-6 border-t border-gray-200">
+                            <button
+                                onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                                disabled={currentPage === 0}
+                                className="btn btn-secondary disabled:opacity-50 flex items-center"
+                            >
+                                <i data-lucide="chevron-left" className="w-4 h-4 mr-1"></i>
+                                Previous
+                            </button>
+                            <div className="flex items-center space-x-2">
+                                <span className="text-sm text-gray-600">
+                                    Page {currentPage + 1} of {totalPages}
+                                </span>
+                                <div className="flex space-x-1">
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setCurrentPage(i)}
+                                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
+                                                currentPage === i
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                                disabled={currentPage === totalPages - 1}
+                                className="btn btn-secondary disabled:opacity-50 flex items-center"
+                            >
+                                Next
+                                <i data-lucide="chevron-right" className="w-4 h-4 ml-1"></i>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    // Enhanced Admin Subscriptions Component
+    const AdminSubscriptions = () => {
+        const { isAdmin } = useAuth();
+        const [subscriptions, setSubscriptions] = useState([]);
+        const [filteredSubscriptions, setFilteredSubscriptions] = useState([]);
+        const [searchTerm, setSearchTerm] = useState('');
+        const [isLoading, setIsLoading] = useState(true);
+        const [showCreateModal, setShowCreateModal] = useState(false);
+        const [newSubscription, setNewSubscription] = useState({
+            name: '',
+            description: '',
+            price: '',
+            currency: 'AZN',
+            category: '',
+            billingPeriod: 'MONTHLY',
+            websiteUrl: '',
+            logoUrl: ''
+        });
+
+        useEffect(() => {
+            if (!isAdmin) return;
+            fetchSubscriptions();
+        }, [isAdmin]);
+
+        useEffect(() => {
+            const filtered = subscriptions.filter(subscription =>
+                subscription.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                subscription.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                subscription.category?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredSubscriptions(filtered);
+        }, [subscriptions, searchTerm]);
+
+        const fetchSubscriptions = async () => {
+            try {
+                const response = await apiService.getAllSubscriptionsAdmin({
+                    page: 0,
+                    size: 1000,
+                    sortBy: 'id',
+                    sortDir: 'desc'
+                });
+                if (response.subscriptions) {
+                    setSubscriptions(response.subscriptions);
+                }
+            } catch (error) {
+                showToast('Failed to fetch subscriptions', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const handleCreateSubscription = async (e) => {
+            e.preventDefault();
+            try {
+                const subscriptionData = {
+                    ...newSubscription,
+                    price: parseFloat(newSubscription.price)
+                };
+                const response = await apiService.createSubscription(subscriptionData);
+                if (response.success) {
+                    showToast('Service created successfully! 🎉', 'success');
+                    setShowCreateModal(false);
+                    setNewSubscription({
+                        name: '',
+                        description: '',
+                        price: '',
+                        currency: 'AZN',
+                        category: '',
+                        billingPeriod: 'MONTHLY',
+                        websiteUrl: '',
+                        logoUrl: ''
+                    });
+                    fetchSubscriptions();
+                }
+            } catch (error) {
+                showToast('Failed to create service', 'error');
+            }
+        };
+
+        const handleDeleteSubscription = async (id) => {
+            if (!confirm('Are you sure you want to delete this service?')) {
+                return;
+            }
+            try {
+                const response = await apiService.deleteSubscription(id);
+                if (response.success) {
+                    showToast('Service deleted successfully', 'success');
+                    fetchSubscriptions();
+                }
+            } catch (error) {
+                showToast('Failed to delete service', 'error');
+            }
+        };
+
+        const handleActivateSubscription = async (id) => {
+            try {
+                const response = await apiService.activateSubscription(id);
+                if (response.success) {
+                    showToast('Service activated successfully! ✨', 'success');
+                    fetchSubscriptions();
+                }
+            } catch (error) {
+                showToast('Failed to activate service', 'error');
+            }
+        };
+
+        if (!isAdmin) {
+            return (
+                <div className="text-center py-16">
+                    <div className="w-24 h-24 gradient-bg-2 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="shield-x" className="w-12 h-12 text-white"></i>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Access Denied</h2>
+                    <p className="text-xl text-gray-600">You don't have permission to access this page.</p>
+                </div>
+            );
+        }
+
+        if (isLoading) {
+            return <Loading message="Loading services..." />;
+        }
+
+        return (
+            <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-2">Service Management 🛍️</h2>
+                        <p className="text-xl text-gray-600">Manage your subscription offerings</p>
+                    </div>
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="btn btn-primary flex items-center"
+                    >
+                        <i data-lucide="plus" className="w-5 h-5 mr-2"></i>
+                        Create New Service
+                    </button>
+                </div>
+
+                {/* Enhanced Search */}
+                <div className="relative">
+                    <i data-lucide="search" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                    <input
+                        type="text"
+                        placeholder="Search services by name, description, or category..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-12 pr-4 py-3 w-full border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                </div>
+
+                {/* Enhanced Services Grid */}
+                {filteredSubscriptions.length > 0 ? (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredSubscriptions.map((subscription, index) => (
+                            <div key={subscription.id} className="card p-6 hover:shadow-xl transition-all">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className={`w-12 h-12 gradient-bg-${(index % 6) + 1} rounded-xl flex items-center justify-center`}>
+                                        <i data-lucide="credit-card" className="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <span className={`badge ${
+                                        subscription.isActive
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                    }`}>
+                                        {subscription.isActive ? '✅ Active' : '⏸️ Inactive'}
+                                    </span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{subscription.name}</h3>
+                                <p className="text-gray-600 mb-4 line-clamp-2">{subscription.description}</p>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {subscription.price?.toFixed(2)} {subscription.currency}
+                                        <span className="text-sm font-normal text-gray-600">/month</span>
+                                    </div>
+                                    <span className="badge bg-blue-100 text-blue-800">
+                                        {subscription.category}
+                                    </span>
+                                </div>
+                                <div className="flex space-x-2">
+                                    {!subscription.isActive && (
+                                        <button
+                                            onClick={() => handleActivateSubscription(subscription.id)}
+                                            className="btn btn-success text-sm flex-1"
+                                        >
+                                            <i data-lucide="play" className="w-4 h-4 mr-1"></i>
+                                            Activate
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => handleDeleteSubscription(subscription.id)}
+                                        className="btn btn-danger text-sm flex-1"
+                                    >
+                                        <i data-lucide="trash-2" className="w-4 h-4 mr-1"></i>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="card p-16 text-center">
+                        <div className="w-24 h-24 gradient-bg-6 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="search" className="w-12 h-12 text-white"></i>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">No services found</h3>
+                        <p className="text-xl text-gray-600 mb-6">
+                            {searchTerm ? 'No services match your search criteria.' : 'Start by creating your first service!'}
+                        </p>
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="btn btn-primary"
+                        >
+                            <i data-lucide="plus" className="w-5 h-5 mr-2"></i>
+                            Create First Service
+                        </button>
+                    </div>
+                )}
+
+                {/* Enhanced Create Service Modal */}
+                {showCreateModal && (
+                    <div className="modal">
+                        <div className="modal-content">
+                            <div className="flex justify-between items-center mb-8">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Create New Service ✨</h3>
+                                    <p className="text-gray-600">Add a new subscription service to your platform</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    <i data-lucide="x" className="w-8 h-8"></i>
+                                </button>
+                            </div>
+                            <form onSubmit={handleCreateSubscription} className="space-y-6">
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Service Name *
+                                    </label>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        value={newSubscription.name}
+                                        onChange={(e) => setNewSubscription({...newSubscription, name: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        placeholder="e.g., Netflix Premium, Spotify Pro"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        id="description"
+                                        value={newSubscription.description}
+                                        onChange={(e) => setNewSubscription({...newSubscription, description: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        placeholder="Describe what this service offers..."
+                                        rows="4"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="price" className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Monthly Price *
+                                        </label>
+                                        <input
+                                            id="price"
+                                            type="number"
+                                            step="0.01"
+                                            value={newSubscription.price}
+                                            onChange={(e) => setNewSubscription({...newSubscription, price: e.target.value})}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                            placeholder="0.00"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="currency" className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Currency
+                                        </label>
+                                        <select
+                                            id="currency"
+                                            value={newSubscription.currency}
+                                            onChange={(e) => setNewSubscription({...newSubscription, currency: e.target.value})}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        >
+                                            <option value="AZN">🇦🇿 AZN</option>
+                                            <option value="USD">🇺🇸 USD</option>
+                                            <option value="EUR">🇪🇺 EUR</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Category *
+                                    </label>
+                                    <input
+                                        id="category"
+                                        type="text"
+                                        value={newSubscription.category}
+                                        onChange={(e) => setNewSubscription({...newSubscription, category: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        placeholder="e.g., Streaming, Music, Software, Gaming"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="websiteUrl" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Website URL (Optional)
+                                    </label>
+                                    <input
+                                        id="websiteUrl"
+                                        type="url"
+                                        value={newSubscription.websiteUrl}
+                                        onChange={(e) => setNewSubscription({...newSubscription, websiteUrl: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        placeholder="https://example.com"
+                                    />
+                                </div>
+                                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCreateModal(false)}
+                                        className="btn btn-secondary"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                    >
+                                        <i data-lucide="plus" className="w-4 h-4 mr-2"></i>
+                                        Create Service
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // User Subscriptions Detail Modal Component
+    const UserSubscriptionsDetailModal = ({ userGroup, onClose }) => {
+        const { user, subscriptions } = userGroup;
+
+        useEffect(() => {
+            // Re-create Lucide icons when the modal mounts
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }, [userGroup]); // Re-run when userGroup changes
+
+        return (
+            <div className="modal">
+                <div className="modal-content">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                                Subscriptions for {user.firstName || user.username}
+                            </h3>
+                            <p className="text-gray-600">
+                                Email: {user.email} | Role: {user.role} | Status: {user.isActive ? 'Active' : 'Inactive'}
+                            </p>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <i data-lucide="x" className="w-8 h-8"></i>
+                        </button>
+                    </div>
+
+                    {subscriptions.length > 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                <tr className="border-b-2 border-gray-200">
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-900">Service</th>
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-900">Monthly Cost</th>
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-900">Start Date</th>
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-900">Next Billing</th>
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-900">Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {subscriptions.map((sub, index) => (
+                                    <tr key={sub.id} className="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all">
+                                        <td className="py-4 px-4">
+                                            <div className="flex items-center space-x-2">
+                                                <i data-lucide="credit-card" className="w-4 h-4 text-gray-400"></i>
+                                                <span className="text-gray-900">{sub.subscriptionName}</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-4 px-4">
+                                                <span className="font-semibold text-gray-900">
+                                                    {sub.monthlyPrice?.toFixed(2)} {sub.currency || 'AZN'}
+                                                </span>
+                                        </td>
+                                        <td className="py-4 px-4 text-gray-600">
+                                            {new Date(sub.startDate).toLocaleDateString()}
+                                        </td>
+                                        <td className="py-4 px-4 text-gray-600">
+                                            {new Date(sub.nextBillingDate).toLocaleDateString()}
+                                        </td>
+                                        <td className="py-4 px-4">
+                                                <span className={`badge ${
+                                                    sub.isActive
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                    {sub.isActive ? '✅ Active' : '⏸️ Inactive'}
+                                                </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-gray-600">This user has no subscriptions.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    // Enhanced Admin User Subscriptions Component
+    const AdminUserSubscriptions = () => {
+        const { isAdmin } = useAuth();
+        const [userSubscriptions, setUserSubscriptions] = useState([]); // Raw user subscriptions
+        const [allUsers, setAllUsers] = useState([]); // All users for lookup
+        const [groupedUsers, setGroupedUsers] = useState([]); // Grouped data for the table
+        const [searchTerm, setSearchTerm] = useState('');
+        const [statusFilter, setStatusFilter] = useState('All'); // Filter for user's active status
+        const [isLoading, setIsLoading] = useState(true);
+        const [showUserSubscriptionsModal, setShowUserSubscriptionsModal] = useState(false);
+        const [selectedUserForModal, setSelectedUserForModal] = useState(null); // Stores the grouped user object for modal
+
+        useEffect(() => {
+            if (!isAdmin) return;
+            fetchData();
+        }, [isAdmin]);
+
+        useEffect(() => {
+            if (userSubscriptions.length > 0 || allUsers.length > 0) {
+                const grouped = groupAndFilterSubscriptions(userSubscriptions, allUsers, searchTerm, statusFilter);
+                setGroupedUsers(grouped);
+            } else if (!isLoading) {
+                setGroupedUsers([]);
+            }
+        }, [userSubscriptions, allUsers, searchTerm, statusFilter, isLoading]);
+
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const [userSubsResponse, usersResponse] = await Promise.all([
+                    apiService.getAllUserSubscriptionsAdmin({ page: 0, size: 1000 }),
+                    apiService.getAllUsers({ page: 0, size: 1000 }) // Fetch all users
+                ]);
+
+                if (userSubsResponse.success) {
+                    setUserSubscriptions(userSubsResponse.subscriptions || []);
+                }
+                if (usersResponse.users) {
+                    setAllUsers(usersResponse.users || []);
+                }
+            } catch (error) {
+                showToast('Failed to fetch data', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const groupAndFilterSubscriptions = (subscriptions, users, term, status) => {
+            const userMap = new Map(); // Key: username, Value: { user: {}, subscriptions: [] }
+            const userLookupByUsername = new Map(users.map(user => [user.username, user])); // Map users by username for quick lookup
+
+            subscriptions.forEach(sub => {
+                const username = sub.username; // Use username from subscription object
+                const user = userLookupByUsername.get(username);
+
+                if (user) { // Only process if user details are found
+                    if (!userMap.has(username)) {
+                        userMap.set(username, {
+                            user: {
+                                id: user.id, // Use actual user ID from allUsers
+                                username: user.username,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                email: user.email,
+                                isActive: user.isActive,
+                                role: user.role
+                            },
+                            subscriptions: []
+                        });
+                    }
+                    userMap.get(username).subscriptions.push(sub);
+                }
             });
 
-            hideAddSubscription();
-            await loadUserSubscriptions();
-            await loadMonthlyCost();
-            renderAvailableSubscriptions();
+            let grouped = Array.from(userMap.values());
 
-            document.getElementById('addSubscriptionForm').reset();
-        } catch (error) {
-            showError('addSubscriptionError', error.message);
+            // Apply search term
+            if (term) {
+                grouped = grouped.filter(group =>
+                    group.user.username.toLowerCase().includes(term.toLowerCase()) ||
+                    group.user.email.toLowerCase().includes(term.toLowerCase()) ||
+                    (group.user.firstName && group.user.firstName.toLowerCase().includes(term.toLowerCase())) ||
+                    (group.user.lastName && group.user.lastName.toLowerCase().includes(term.toLowerCase())) ||
+                    group.subscriptions.some(sub => sub.subscriptionName.toLowerCase().includes(term.toLowerCase()))
+                );
+            }
+
+            // Apply status filter (for the user's overall status)
+            if (status !== 'All') {
+                grouped = grouped.filter(group => {
+                    if (status === 'Active') {
+                        return group.user.isActive;
+                    } else { // Inactive
+                        return !group.user.isActive;
+                    }
+                });
+            }
+
+            return grouped;
+        };
+
+        const handleSendReminders = async () => {
+            try {
+                const response = await apiService.sendReminders();
+                if (response.success) {
+                    showToast('Reminders sent successfully! 📧', 'success');
+                }
+            } catch (error) {
+                showToast('Failed to send reminders', 'error');
+            }
+        };
+
+        const handleViewUserSubscriptions = (userGroup) => {
+            setSelectedUserForModal(userGroup);
+            setShowUserSubscriptionsModal(true);
+        };
+
+        if (!isAdmin) {
+            return (
+                <div className="text-center py-16">
+                    <div className="w-24 h-24 gradient-bg-2 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="shield-x" className="w-12 h-12 text-white"></i>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Access Denied</h2>
+                    <p className="text-xl text-gray-600">You don't have permission to access this page.</p>
+                </div>
+            );
         }
-    }
 
-    // Filtering and Search
-    function filterSubscriptions() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allSubscriptions.filter(sub =>
-            sub.name.toLowerCase().includes(searchTerm) ||
-            sub.description.toLowerCase().includes(searchTerm) ||
-            sub.category.toLowerCase().includes(searchTerm)
+        if (isLoading) {
+            return <Loading message="Loading user subscriptions..." />;
+        }
+
+        return (
+            <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-2">User Subscriptions 📊</h2>
+                        <p className="text-xl text-gray-600">Monitor and manage all user subscriptions</p>
+                    </div>
+                    <button onClick={handleSendReminders} className="btn btn-primary flex items-center">
+                        <i data-lucide="bell" className="w-5 h-5 mr-2"></i>
+                        Send Reminders
+                    </button>
+                </div>
+
+                {/* Enhanced Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                        <i data-lucide="search" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                        <input
+                            type="text"
+                            placeholder="Search by username or service name..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-12 pr-4 py-3 w-full border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
+                    </div>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-6 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    >
+                        <option value="All">All Status</option>
+                        <option value="Active">✅ Active Users</option>
+                        <option value="Inactive">❌ Inactive Users</option>
+                    </select>
+                </div>
+
+                {/* Enhanced User Subscriptions Table */}
+                <div className="card p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-2xl font-semibold text-gray-900 flex items-center">
+                            <i data-lucide="bar-chart-3" className="w-6 h-6 mr-2 text-purple-600"></i>
+                            All Users with Subscriptions ({groupedUsers.length})
+                        </h3>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <div className="flex items-center space-x-1">
+                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span>Active Users: {groupedUsers.filter(u => u.user.isActive).length}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                                <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                <span>Inactive Users: {groupedUsers.filter(u => !u.user.isActive).length}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                            <tr className="border-b-2 border-gray-200">
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">User</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Email</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Role</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Status</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Total Subscriptions</th>
+                                <th className="text-left py-4 px-4 font-semibold text-gray-900">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {groupedUsers.map((userGroup, index) => (
+                                <tr key={userGroup.user.id} className="border-b border-gray-100 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all">
+                                    <td className="py-4 px-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className={`w-10 h-10 gradient-bg-${(index % 6) + 1} rounded-full flex items-center justify-center`}>
+                                                    <span className="text-white font-semibold">
+                                                        {userGroup.user.username.charAt(0).toUpperCase()}
+                                                    </span>
+                                            </div>
+                                            <span className="font-semibold text-gray-900">{userGroup.user.username}</span>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-4 text-gray-600">{userGroup.user.email}</td>
+                                    <td className="py-4 px-4">
+                                            <span className={`badge ${
+                                                userGroup.user.role === 'ADMIN'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {userGroup.user.role === 'ADMIN' ? '👑 ADMIN' : '👤 USER'}
+                                            </span>
+                                    </td>
+                                    <td className="py-4 px-4">
+                                            <span className={`badge ${
+                                                userGroup.user.isActive
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {userGroup.user.isActive ? '✅ Active' : '❌ Inactive'}
+                                            </span>
+                                    </td>
+                                    <td className="py-4 px-4 text-gray-600">
+                                        {userGroup.subscriptions.length}
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <button
+                                            onClick={() => handleViewUserSubscriptions(userGroup)}
+                                            className="btn btn-primary text-xs px-3 py-1"
+                                        >
+                                            <i data-lucide="eye" className="w-3 h-3 mr-1"></i>
+                                            View Subscriptions
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {showUserSubscriptionsModal && selectedUserForModal && (
+                    <UserSubscriptionsDetailModal
+                        userGroup={selectedUserForModal}
+                        onClose={() => setShowUserSubscriptionsModal(false)}
+                    />
+                )}
+            </div>
         );
-        renderAvailableSubscriptions(filtered);
+    };
+
+    // Enhanced My Subscriptions Component
+    const MySubscriptions = () => {
+        const [subscriptions, setSubscriptions] = useState([]);
+        const [filteredSubscriptions, setFilteredSubscriptions] = useState([]);
+        const [searchTerm, setSearchTerm] = useState('');
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+            fetchSubscriptions();
+        }, []);
+
+        useEffect(() => {
+            const filtered = subscriptions.filter(subscription =>
+                subscription.subscriptionName?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredSubscriptions(filtered);
+        }, [subscriptions, searchTerm]);
+
+        const fetchSubscriptions = async () => {
+            try {
+                const response = await apiService.getUserSubscriptions();
+                if (response.success) {
+                    setSubscriptions(response.subscriptions || []);
+                }
+            } catch (error) {
+                showToast('Failed to fetch subscriptions', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const handleDeleteSubscription = async (id) => {
+            if (!confirm('Are you sure you want to delete this subscription?')) {
+                return;
+            }
+            try {
+                const response = await apiService.deleteUserSubscription(id);
+                if (response.success) {
+                    showToast('Subscription deleted successfully', 'success');
+                    fetchSubscriptions();
+                }
+            } catch (error) {
+                showToast('Failed to delete subscription', 'error');
+            }
+        };
+
+        if (isLoading) {
+            return <Loading message="Loading your subscriptions..." />;
+        }
+
+        return (
+            <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-2">My Subscriptions 💳</h2>
+                        <p className="text-xl text-gray-600">Manage your active subscriptions</p>
+                    </div>
+                </div>
+
+                {/* Enhanced Search */}
+                <div className="relative">
+                    <i data-lucide="search" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                    <input
+                        type="text"
+                        placeholder="Search your subscriptions..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-12 pr-4 py-3 w-full border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                </div>
+
+                {/* Enhanced Subscriptions Grid */}
+                {filteredSubscriptions.length > 0 ? (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredSubscriptions.map((subscription, index) => (
+                            <div key={subscription.id} className="card p-6 hover:shadow-xl transition-all">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className={`w-12 h-12 gradient-bg-${(index % 6) + 1} rounded-xl flex items-center justify-center`}>
+                                        <i data-lucide="credit-card" className="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <span className={`badge ${
+                                        subscription.isActive
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                    }`}>
+                                        {subscription.isActive ? '✅ ACTIVE' : '⏸️ INACTIVE'}
+                                    </span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{subscription.subscriptionName}</h3>
+                                <p className="text-sm text-gray-600 mb-4 flex items-center">
+                                    <i data-lucide="calendar" className="w-4 h-4 mr-2"></i>
+                                    Started on {new Date(subscription.startDate).toLocaleDateString()}
+                                </p>
+                                <div className="space-y-3 mb-6">
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-2">
+                                            <i data-lucide="dollar-sign" className="w-4 h-4 text-green-600"></i>
+                                            <span className="font-semibold text-gray-900">Monthly Cost</span>
+                                        </div>
+                                        <span className="font-bold text-green-600">
+                                            {subscription.monthlyPrice?.toFixed(2)} AZN
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                        <div className="flex items-center space-x-2">
+                                            <i data-lucide="calendar-clock" className="w-4 h-4 text-blue-600"></i>
+                                            <span className="font-semibold text-gray-900">Next Billing</span>
+                                        </div>
+                                        <span className="font-bold text-blue-600">
+                                            {new Date(subscription.nextBillingDate).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => handleDeleteSubscription(subscription.id)}
+                                    className="w-full btn btn-danger"
+                                >
+                                    <i data-lucide="trash-2" className="w-4 h-4 mr-2"></i>
+                                    Cancel Subscription
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="card p-16 text-center">
+                        <div className="w-24 h-24 gradient-bg-6 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="credit-card" className="w-12 h-12 text-white"></i>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">No subscriptions found</h3>
+                        <p className="text-xl text-gray-600 mb-8">
+                            {searchTerm ? 'No subscriptions match your search.' : "You haven't added any subscriptions yet."}
+                        </p>
+                        <p className="text-gray-500 mb-6">Discover amazing services and start your subscription journey! 🚀</p>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Enhanced Browse Services Component
+    const BrowseServices = () => {
+        const [subscriptions, setSubscriptions] = useState([]);
+        const [filteredSubscriptions, setFilteredSubscriptions] = useState([]);
+        const [categories, setCategories] = useState([]);
+        const [selectedCategory, setSelectedCategory] = useState('All');
+        const [searchTerm, setSearchTerm] = useState('');
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+            fetchData();
+        }, []);
+
+        useEffect(() => {
+            let filtered = subscriptions;
+            if (selectedCategory !== 'All') {
+                filtered = filtered.filter(sub => sub.category === selectedCategory);
+            }
+            if (searchTerm) {
+                filtered = filtered.filter(sub =>
+                    sub.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    sub.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+            setFilteredSubscriptions(filtered);
+        }, [subscriptions, selectedCategory, searchTerm]);
+
+        const fetchData = async () => {
+            try {
+                const [subscriptionsResponse, categoriesResponse] = await Promise.all([
+                    apiService.getAvailableSubscriptions(),
+                    apiService.getSubscriptionCategories(),
+                ]);
+                if (subscriptionsResponse.success) {
+                    setSubscriptions(subscriptionsResponse.subscriptions || []);
+                }
+                if (categoriesResponse.success) {
+                    setCategories(['All', ...(categoriesResponse.categories || [])]);
+                }
+            } catch (error) {
+                showToast('Failed to fetch services', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const handleSubscribe = async (subscriptionId) => {
+            try {
+                const startDate = new Date().toISOString().split('T')[0];
+                const nextBillingDate = new Date();
+                nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+                const response = await apiService.createUserSubscription({
+                    subscriptionId,
+                    startDate,
+                    nextBillingDate: nextBillingDate.toISOString().split('T')[0],
+                });
+                if (response.success) {
+                    showToast('Successfully subscribed to service! 🎉', 'success');
+                }
+            } catch (error) {
+                showToast('Failed to subscribe to service', 'error');
+            }
+        };
+
+        if (isLoading) {
+            return <Loading message="Loading amazing services..." />;
+        }
+
+        return (
+            <div className="space-y-8">
+                <div className="text-center">
+                    <h2 className="text-4xl font-bold text-gray-900 mb-2">Browse Services 🛍️</h2>
+                    <p className="text-xl text-gray-600">Discover and subscribe to amazing services</p>
+                </div>
+
+                {/* Enhanced Search */}
+                <div className="relative max-w-2xl mx-auto">
+                    <i data-lucide="search" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                    <input
+                        type="text"
+                        placeholder="Search for services, features, or categories..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-12 pr-4 py-4 w-full border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg"
+                    />
+                </div>
+
+                {/* Enhanced Category Filters */}
+                <div className="flex flex-wrap justify-center gap-3">
+                    {categories.map((category, index) => (
+                        <button
+                            key={category}
+                            onClick={() => setSelectedCategory(category)}
+                            className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all ${
+                                selectedCategory === category
+                                    ? `gradient-bg-${(index % 6) + 1} text-white shadow-lg`
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                        >
+                            {category === 'All' ? '🌟 All Services' : `📱 ${category}`}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Enhanced Services Grid */}
+                {filteredSubscriptions.length > 0 ? (
+                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredSubscriptions.map((subscription, index) => (
+                            <div key={subscription.id} className="card p-6 hover:shadow-xl transition-all floating">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className={`w-16 h-16 gradient-bg-${(index % 6) + 1} rounded-xl flex items-center justify-center`}>
+                                        <i data-lucide="star" className="w-8 h-8 text-white"></i>
+                                    </div>
+                                    <span className="badge bg-blue-100 text-blue-800">
+                                        {subscription.category}
+                                    </span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3">{subscription.name}</h3>
+                                <p className="text-gray-600 mb-6 line-clamp-3">{subscription.description}</p>
+                                <div className="mb-6">
+                                    <div className="text-3xl font-bold text-gray-900 mb-1">
+                                        {subscription.price?.toFixed(2)} {subscription.currency || 'AZN'}
+                                    </div>
+                                    <div className="text-sm text-gray-600">per month</div>
+                                </div>
+                                <button
+                                    onClick={() => handleSubscribe(subscription.id)}
+                                    disabled={!subscription.isActive}
+                                    className={`w-full btn ${subscription.isActive ? 'btn-primary' : 'btn-secondary'} text-lg py-3`}
+                                >
+                                    {subscription.isActive ? (
+                                        <>
+                                            <i data-lucide="plus" className="w-5 h-5 mr-2"></i>
+                                            Subscribe Now
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i data-lucide="clock" className="w-5 h-5 mr-2"></i>
+                                            Coming Soon
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="card p-16 text-center">
+                        <div className="w-24 h-24 gradient-bg-6 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="search" className="w-12 h-12 text-white"></i>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">No services found</h3>
+                        <p className="text-xl text-gray-600 mb-6">
+                            {searchTerm || selectedCategory !== 'All'
+                                ? 'No services match your current filters.'
+                                : 'No services are currently available.'}
+                        </p>
+                        <p className="text-gray-500">Try adjusting your search or check back later! 🔍</p>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Enhanced Main App Component
+    const App = () => {
+        const { user, isLoading, logout, isAdmin } = useAuth();
+        const [currentPage, setCurrentPage] = useState('dashboard');
+        const [error, setError] = useState(null); // New state for error
+
+        // Basic error boundary for rendering issues
+        useEffect(() => {
+            const handleError = (event) => {
+                console.error("Unhandled error caught by App component:", event.error);
+                setError(event.error);
+                event.preventDefault(); // Prevent default browser error handling
+            };
+            window.addEventListener('error', handleError);
+            return () => window.removeEventListener('error', handleError);
+        }, []);
+
+        if (error) {
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-red-100 text-red-800 p-8">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold mb-4">An error occurred!</h2>
+                        <p className="mb-4">{error.message || 'Something went wrong during rendering.'}</p>
+                        <p className="text-sm text-red-600">Please check the browser console for more details.</p>
+                    </div>
+                </div>
+            );
+        }
+
+        if (isLoading) {
+            return <Loading message="Initializing your awesome experience..." />;
+        }
+
+        if (!user) {
+            return <Login />;
+        }
+
+        const renderContent = () => {
+            switch (currentPage) {
+                case 'dashboard':
+                    return isAdmin ? <AdminDashboard /> : <Dashboard />;
+                case 'subscriptions':
+                    return <MySubscriptions />;
+                case 'browse':
+                    return <BrowseServices />;
+                case 'admin-users':
+                    return <AdminUsers />;
+                case 'admin-subscriptions':
+                    return <AdminSubscriptions />;
+                case 'admin-user-subscriptions':
+                    return <AdminUserSubscriptions />;
+                default:
+                    return isAdmin ? <AdminDashboard /> : <Dashboard />;
+            }
+        };
+
+        const menuItems = isAdmin ? [
+            { id: 'dashboard', label: 'Admin Dashboard', icon: 'home', color: 'text-blue-600' },
+            { id: 'admin-users', label: 'Users', icon: 'users', color: 'text-green-600' },
+            { id: 'admin-subscriptions', label: 'Services', icon: 'credit-card', color: 'text-purple-600' },
+            { id: 'admin-user-subscriptions', label: 'User Subscriptions', icon: 'bar-chart-3', color: 'text-orange-600' },
+        ] : [
+            { id: 'dashboard', label: 'Dashboard', icon: 'home', color: 'text-blue-600' },
+            { id: 'subscriptions', label: 'My Subscriptions', icon: 'credit-card', color: 'text-green-600' },
+            { id: 'browse', label: 'Browse Services', icon: 'search', color: 'text-purple-600' },
+        ];
+
+        return (
+            <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+                <ConnectionStatus />
+
+                {/* Enhanced Sidebar */}
+                <div className="w-72 bg-white shadow-2xl">
+                    <div className="p-6 border-b border-gray-200">
+                        <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 gradient-bg-1 rounded-xl flex items-center justify-center glow">
+                                <i data-lucide="credit-card" className="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">SubManager</h1>
+                                <p className="text-sm text-gray-600 flex items-center">
+                                    {isAdmin ? '👑 Admin Panel' : '👤 User Panel'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <nav className="p-4">
+                        <ul className="space-y-2">
+                            {menuItems.map((item) => (
+                                <li key={item.id}>
+                                    <button
+                                        onClick={() => setCurrentPage(item.id)}
+                                        className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left transition-all sidebar-item ${
+                                            currentPage === item.id ? 'active' : ''
+                                        }`}
+                                    >
+                                        <i data-lucide={item.icon} className={`w-6 h-6 ${currentPage === item.id ? 'text-white' : item.color}`}></i>
+                                        <span className="font-semibold text-lg">{item.label}</span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                    <div className="absolute bottom-0 left-0 right-0 w-72 p-6 border-t border-gray-200 bg-white">
+                        <div className="flex items-center space-x-4 mb-4">
+                            <div className="w-12 h-12 gradient-bg-5 rounded-full flex items-center justify-center">
+                                <span className="text-white font-bold text-lg">
+                                    {user.username.charAt(0).toUpperCase()}
+                                </span>
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-semibold text-gray-900">{user.username}</p>
+                                <p className="text-sm text-gray-600">{user.email}</p>
+                                {isAdmin && <p className="text-xs text-blue-600 font-medium">👑 Administrator</p>}
+                            </div>
+                        </div>
+                        <button
+                            onClick={logout}
+                            className="w-full btn btn-secondary flex items-center justify-center"
+                        >
+                            <i data-lucide="log-out" className="w-4 h-4 mr-2"></i>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+
+                {/* Enhanced Main Content */}
+                <div className="flex-1 overflow-auto">
+                    <div className="p-8">
+                        {renderContent()}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Root Component
+    const Root = () => (
+        <AuthProvider>
+            <App />
+        </AuthProvider>
+    );
+
+    // Initialize app
+    const root = createRoot(document.getElementById('root'));
+    try {
+        root.render(<Root />);
+    } catch (e) {
+        console.error("Error rendering React app:", e);
+        // Fallback for critical render errors
+        document.getElementById('root').innerHTML = `
+            <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #fee2e2; color: #991b1b; padding: 2rem;">
+                <div style="text-align: center;">
+                    <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">An unexpected error occurred!</h2>
+                    <p style="margin-bottom: 1rem;">The application failed to load. Please check the browser console for more details.</p>
+                    <p style="font-size: 0.875rem; color: #b91c1c;">Error: ${e.message || 'Unknown error'}</p>
+                </div>
+            </div>
+        `;
     }
 
-    function filterByCategory(category, element) {
-        document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
-        element.classList.add('active');
 
-        const filtered = category === 'all'
-            ? allSubscriptions
-            : allSubscriptions.filter(sub => sub.category === category);
-
-        renderAvailableSubscriptions(filtered);
-    }
-
-    // UI Functions
-    function showLogin() {
-        loginForm.classList.remove('hidden');
-        registerForm.classList.add('hidden');
-        dashboard.classList.add('hidden');
-        mainNav.style.display = 'none';
-
-        loginBtn.style.display = 'inline-flex';
-        registerBtn.style.display = 'inline-flex';
-        logoutBtn.style.display = 'none';
-        userAvatar.style.display = 'none';
-        headerSearch.style.display = 'none';
-    }
-
-    function showRegister() {
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
-        dashboard.classList.add('hidden');
-        mainNav.style.display = 'none';
-
-        loginBtn.style.display = 'inline-flex';
-        registerBtn.style.display = 'inline-flex';
-        logoutBtn.style.display = 'none';
-        userAvatar.style.display = 'none';
-        headerSearch.style.display = 'none';
-    }
-
-    function showDashboard() {
-        loginForm.classList.add('hidden');
-        registerForm.classList.add('hidden');
-        dashboard.classList.remove('hidden');
-        mainNav.style.display = 'flex';
-
-        loginBtn.style.display = 'none';
-        registerBtn.style.display = 'none';
-        logoutBtn.style.display = 'inline-flex';
-        userAvatar.style.display = 'flex';
-        headerSearch.style.display = 'block';
-    }
-
-    function showProfile() {
-        document.getElementById('profileModal').classList.remove('hidden');
-    }
-
-    function hideProfile() {
-        document.getElementById('profileModal').classList.add('hidden');
-        hideError('profileError');
-        hideSuccess('profileSuccess');
-    }
-
-    function hideAddSubscription() {
-        document.getElementById('addSubscriptionModal').classList.add('hidden');
-        hideError('addSubscriptionError');
-    }
-
-    function showError(elementId, message) {
-        const element = document.getElementById(elementId);
-        element.textContent = message;
-        element.classList.remove('hidden');
-    }
-
-    function hideError(elementId) {
-        document.getElementById(elementId).classList.add('hidden');
-    }
-
-    function showSuccess(elementId, message) {
-        const element = document.getElementById(elementId);
-        element.textContent = message;
-        element.classList.remove('hidden');
-        element.className = 'alert alert-success';
-    }
-
-    function hideSuccess(elementId) {
-        document.getElementById(elementId).classList.add('hidden');
-    }
+    // Initialize Lucide icons after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        if (window.lucide) {
+            lucide.createIcons();
+            console.log("Lucide icons initialized.");
+        } else {
+            console.warn("Lucide library not found.");
+        }
+    }, 500);
 </script>
 </body>
 </html>
