@@ -31,7 +31,6 @@ public class HealthController {
         return ResponseEntity.ok(response);
     }
 
-// Düzəldilmiş JwtAuthFilter.java - isPublicPath metodu
 // Bu hissəni JwtAuthFilter.java faylında istifadə edin
 
     private boolean isPublicPath(String path) {
