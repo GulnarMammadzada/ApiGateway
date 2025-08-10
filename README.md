@@ -21,5 +21,5 @@ Email Service(https://github.com/GulnarMammadzada/EmailService.git) — Manages 
 Technologies Used:
 Java 17, Spring Boot, Spring Cloud Gateway, Spring Security (JWT), PostgreSQL, Redis, Docker, Feign Client, Postman, Gradle, JavaScript, HTML, CSS, Logback, SLF4J, Git, Apache Kafka (planned)
 
-ContactI
+Contact:
 Feel free contact me for questions or contributions.
