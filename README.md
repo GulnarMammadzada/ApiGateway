@@ -1,4 +1,5 @@
 Subscription Management Platform — Gateway Service
+
 Welcome to the Gateway Service repository, a central component of the Subscription Management Platform — a microservices-based backend system for managing digital subscriptions efficiently.
 
 About the Project:
